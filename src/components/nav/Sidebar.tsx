@@ -9,7 +9,7 @@ const LINKS = [
 
 export function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-[var(--line)] bg-[var(--surface)] p-6 lg:block">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-[var(--line)] bg-[var(--surface)] p-6 lg:block">
       <div className="font-display text-[16px]">HIPPSC</div>
       <div className="mb-7 text-[12px] uppercase tracking-[0.1em] text-[var(--faint)]">
         IMTS 2026
