@@ -766,7 +766,7 @@ The targets page filters by query, tier, type, hall, and visited status. Pure fu
 `tests/filter.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest'
-import { filterCompanies, type Filters, DEFAULT_FILTERS } from '../src/lib/filter'
+import { filterCompanies, DEFAULT_FILTERS } from '../src/lib/filter'
 import type { Company } from '../src/lib/types'
 
 const make = (over: Partial<Company>): Company => ({
