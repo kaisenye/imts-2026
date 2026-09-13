@@ -10,7 +10,7 @@
 - [x] 8  OCR merge (TDD)
 - [x] 9  Passcode gate + nav shell
 - [x] 10 Data hooks
-- [ ] 11 Targets page
+- [x] 11 Targets page
 - [ ] 12 Company detail + notes
 - [ ] 13 Card capture + OCR fn
 - [ ] 14 Contacts page
