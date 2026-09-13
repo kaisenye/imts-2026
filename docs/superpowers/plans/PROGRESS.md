@@ -12,7 +12,7 @@
 - [x] 10 Data hooks
 - [x] 11 Targets page
 - [ ] 12 Company detail + notes
-- [ ] 13 Card capture + OCR fn
+- [x] 13 Card capture + OCR fn
 - [ ] 14 Contacts page
 - [ ] 15 Floor map
 - [ ] 16 Playbook content
