@@ -156,6 +156,12 @@ const en = {
   tierDLabel: 'Tier D',
   tierMLabel: 'Media',
 
+  // hall map labels (drawn inside the SVG)
+  hallWSub: 'Tooling & Workholding · 9:00–17:00 · 43xxxx',
+  hallNSub: 'Automation · 10:00–18:00 · 23xxxx',
+  hallSSub: 'Metal Removal · 10:00–18:00 · 33xxxx',
+  hallESub: 'Software · QA · 9–17',
+
   // halls
   hallW: 'West',
   hallS: 'South',
@@ -302,6 +308,11 @@ const zh: Strings = {
   tierCLabel: 'C 级',
   tierDLabel: 'D 级',
   tierMLabel: '媒体',
+
+  hallWSub: '刀具与工件夹具 · 9:00–17:00 · 43xxxx',
+  hallNSub: '自动化 · 10:00–18:00 · 23xxxx',
+  hallSSub: '金属切削 · 10:00–18:00 · 33xxxx',
+  hallESub: '软件 · 质检 · 9–17',
 
   hallW: '西馆',
   hallS: '南馆',

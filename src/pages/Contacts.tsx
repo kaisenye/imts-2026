@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useContacts } from '../hooks/useContacts'
+import { useLocale } from '../i18n/LocaleContext'
 import { useCompanies } from '../hooks/useCompanies'
 import { contactsToCsv, downloadCsv } from '../lib/csv'
 import { ContactList } from '../components/contacts/ContactList'
@@ -9,6 +10,7 @@ import { ErrorBanner } from '../components/ui/ErrorBanner'
 import { Empty } from '../components/ui/Empty'
 
 export default function Contacts() {
+  const { t } = useLocale()
   const { contacts, loading, error, reload, add, remove } = useContacts()
   const { companies } = useCompanies()
   const [q, setQ] = useState('')
@@ -32,9 +34,9 @@ export default function Contacts() {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold">Contacts</h1>
+        <h1 className="text-2xl font-semibold">{t.contactsTitle}</h1>
         <Button onClick={() => setCaptureOpen(true)} variant="primary" className="min-h-10 px-3 text-[14px]">
-          + Card
+          {t.addCard}
         </Button>
       </div>
 
@@ -43,8 +45,8 @@ export default function Contacts() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search contacts"
-          aria-label="Search contacts"
+          placeholder={t.searchContacts}
+          aria-label={t.searchContacts}
           className="min-h-11 min-w-0 flex-1 rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 text-base"
         />
         <Button
@@ -52,7 +54,7 @@ export default function Contacts() {
           disabled={contacts.length === 0}
           className="shrink-0 px-3 text-[14px]"
         >
-          CSV
+          {t.csv}
         </Button>
       </div>
 
@@ -65,10 +67,10 @@ export default function Contacts() {
           <ErrorBanner message={error} onRetry={reload} />
         </div>
       )}
-      {loading && <Empty>Loading contacts…</Empty>}
-      {!loading && contacts.length === 0 && <Empty>No cards captured yet.</Empty>}
+      {loading && <Empty>{t.loadingTargets}</Empty>}
+      {!loading && contacts.length === 0 && <Empty>{t.noCards}</Empty>}
       {!loading && contacts.length > 0 && visible.length === 0 && (
-        <Empty>No contacts match “{q.trim()}”.</Empty>
+        <Empty>{t.noContactMatch} “{q.trim()}”</Empty>
       )}
 
       {visible.length > 0 && (

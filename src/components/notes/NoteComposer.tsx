@@ -1,8 +1,10 @@
 import { useCallback, useState, type FormEvent } from 'react'
 import { useVoiceNote } from '../../hooks/useVoiceNote'
+import { useLocale } from '../../i18n/LocaleContext'
 import { Button } from '../ui/Button'
 
 export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void> }) {
+  const { t } = useLocale()
   const [body, setBody] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +29,7 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
       await onAdd(trimmed)
       setBody('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save the note.')
+      setError(err instanceof Error ? err.message : t.noteSaveFailed)
     } finally {
       setSaving(false)
     }
@@ -40,8 +42,8 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
-          placeholder="What did they say?"
-          aria-label="New note"
+          placeholder={t.notePlaceholder}
+          aria-label={t.noteLabel}
           className="
             w-full rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] p-3 pr-12
             text-base leading-relaxed transition-colors duration-150
@@ -53,8 +55,8 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
           <button
             type="button"
             onClick={() => (listening ? voice.stop() : void voice.start())}
-            aria-label={listening ? 'Stop dictation' : 'Dictate note'}
-            title={listening ? 'Stop dictation' : 'Dictate note (English or 中文)'}
+            aria-label={listening ? t.dictateStop : t.dictate}
+            title={listening ? t.dictateStop : t.dictate}
             className={`
               absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full
               transition-colors duration-150
@@ -89,7 +91,7 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--flag)] opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--flag)]" />
           </span>
-          {voice.state === 'connecting' ? 'Connecting…' : voice.partial || 'Listening — English or 中文'}
+          {voice.state === 'connecting' ? t.connecting : voice.partial || t.listening}
         </p>
       )}
 
@@ -102,7 +104,7 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
         disabled={saving || !body.trim()}
         className="mt-2 w-full"
       >
-        {saving ? 'Saving…' : 'Add note'}
+        {saving ? t.saving : t.addNote}
       </Button>
     </form>
   )

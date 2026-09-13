@@ -1,4 +1,5 @@
 import type { Contact } from '../../lib/types'
+import { useLocale } from '../../i18n/LocaleContext'
 
 export function ContactList({
   contacts,
@@ -7,8 +8,10 @@ export function ContactList({
   contacts: Contact[]
   onRemove: (id: string) => void
 }) {
+  const { t } = useLocale()
+
   if (contacts.length === 0) {
-    return <p className="py-4 text-[15px] text-[var(--muted)]">No contacts yet.</p>
+    return <p className="py-4 text-[15px] text-[var(--muted)]">{t.noContacts}</p>
   }
   return (
     <ul className="mt-2 list-none p-0">
@@ -22,7 +25,7 @@ export function ContactList({
             />
           )}
           <div className="min-w-0 flex-1">
-            <div className="text-[15px] font-semibold">{contact.name || 'Unnamed'}</div>
+            <div className="text-[15px] font-semibold">{contact.name || t.unnamed}</div>
             {(contact.title || contact.company_name) && (
               <div className="text-[13px] text-[var(--muted)]">
                 {[contact.title, contact.company_name].filter(Boolean).join(' · ')}
@@ -44,7 +47,7 @@ export function ContactList({
             onClick={() => onRemove(contact.id)}
             className="shrink-0 self-start text-[13px] text-[var(--faint)] underline"
           >
-            Delete
+            {t.del}
           </button>
         </li>
       ))}

@@ -1,5 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Button } from './ui/Button'
+import { useLocale } from '../i18n/LocaleContext'
+import { LocaleSwitch } from './LocaleSwitch'
 
 const STORAGE_KEY = 'hippsc_auth'
 const EXPECTED = import.meta.env.VITE_APP_PASSCODE
@@ -10,6 +12,7 @@ const EXPECTED = import.meta.env.VITE_APP_PASSCODE
 const CONFIGURED = typeof EXPECTED === 'string' && EXPECTED.length > 0
 
 export function PasscodeGate({ children }: { children: ReactNode }) {
+  const { t } = useLocale()
   const [unlocked, setUnlocked] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === 'ok'
@@ -39,12 +42,12 @@ export function PasscodeGate({ children }: { children: ReactNode }) {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="text-2xl font-semibold">HIPPSC IMTS</h1>
-      <p className="mt-1 text-[15px] text-[var(--muted)]">Field playbook. Enter the passcode.</p>
+      <LocaleSwitch className="mb-5 self-start" />
+      <h1 className="text-2xl font-semibold">{t.gateTitle}</h1>
+      <p className="mt-1 text-[15px] text-[var(--muted)]">{t.gateSub}</p>
       {!CONFIGURED && (
         <p className="mt-4 rounded-lg border border-[#e9c9c6] bg-[#fdf3f2] p-3 text-[14px] text-[#b3372e]">
-          No passcode is configured for this build. Set <code>VITE_APP_PASSCODE</code> in the
-          environment and redeploy.
+          {t.gateUnconfigured}
         </p>
       )}
       <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
@@ -57,14 +60,14 @@ export function PasscodeGate({ children }: { children: ReactNode }) {
             setValue(e.target.value)
             setError(false)
           }}
-          placeholder="Passcode"
-          aria-label="Passcode"
+          placeholder={t.gatePlaceholder}
+          aria-label={t.gatePlaceholder}
           disabled={!CONFIGURED}
           className="min-h-12 w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 text-base"
         />
-        {error && <p className="text-[14px] text-[#b3372e]">Wrong passcode.</p>}
+        {error && <p className="text-[14px] text-[#b3372e]">{t.gateWrong}</p>}
         <Button type="submit" variant="primary" disabled={!CONFIGURED}>
-          Enter
+          {t.gateEnter}
         </Button>
       </form>
     </div>

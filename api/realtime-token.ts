@@ -5,6 +5,8 @@
 
 export const config = { runtime: 'nodejs' }
 
+// gpt-live-transcribe rejects turn_detection entirely — even set to null — and
+// segments speech itself, emitting one completed transcript per phrase.
 const SESSION = {
   session: {
     type: 'transcription',
@@ -18,7 +20,6 @@ const SESSION = {
           languages: ['en', 'zh'],
           delay: 'low',
         },
-        turn_detection: { type: 'server_vad', silence_duration_ms: 700 },
       },
     },
   },

@@ -3,6 +3,7 @@ import type { Filters, StatusFilter } from '../../lib/filter'
 import { TIER_LABELS, TIER_ORDER, type Tier } from '../../lib/types'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
+import { useLocale } from '../../i18n/LocaleContext'
 
 interface Props {
   open: boolean
@@ -58,10 +59,12 @@ function Group<T extends string>({
 }
 
 export function FilterSheet({ open, filters, types, onChange, onClose }: Props) {
+  const { t } = useLocale()
+
   return (
-    <Sheet open={open} title="Filters" onClose={onClose}>
+    <Sheet open={open} title={t.filters} onClose={onClose}>
       <Group<Tier | 'all'>
-        label="Tier"
+        label={t.filterTier}
         value={filters.tier}
         options={[
           { value: 'all' as const, label: 'All' },
@@ -70,7 +73,7 @@ export function FilterSheet({ open, filters, types, onChange, onClose }: Props) 
         onSelect={(tier) => onChange({ ...filters, tier })}
       />
       <Group<Hall | 'all'>
-        label="Hall"
+        label={t.filterHall}
         value={filters.hall}
         options={[
           { value: 'all' as const, label: 'All' },
@@ -79,19 +82,19 @@ export function FilterSheet({ open, filters, types, onChange, onClose }: Props) 
         onSelect={(hall) => onChange({ ...filters, hall })}
       />
       <Group<string>
-        label="Type"
+        label={t.filterType}
         value={filters.type}
         options={[{ value: 'all', label: 'All' }, ...types.map((t) => ({ value: t, label: t }))]}
         onSelect={(type) => onChange({ ...filters, type })}
       />
       <Group<StatusFilter>
-        label="Status"
+        label={t.filterStatus}
         value={filters.status}
         options={STATUSES}
         onSelect={(status) => onChange({ ...filters, status })}
       />
       <Button variant="primary" className="w-full" onClick={onClose}>
-        Show results
+        {t.showResults}
       </Button>
     </Sheet>
   )

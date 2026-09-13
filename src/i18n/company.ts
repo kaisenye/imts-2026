@@ -64,3 +64,7 @@ export function localHallName(hall: Hall | null, t: Strings): string {
   if (!hall) return '—'
   return { W: t.hallW, S: t.hallS, N: t.hallN, E: t.hallE }[hall]
 }
+
+export function localHallSub(hall: Hall, t: Strings): string {
+  return { W: t.hallWSub, N: t.hallNSub, S: t.hallSSub, E: t.hallESub }[hall]
+}

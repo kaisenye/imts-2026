@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { useCompanies } from '../hooks/useCompanies'
 import { useVisits } from '../hooks/useVisits'
 import { HALL_NAMES, hallForBooths, type Hall } from '../lib/hall'
+import { useLocale } from '../i18n/LocaleContext'
+import { localizeCompany, localHallName } from '../i18n/company'
 import { CompanyPanel } from '../components/company/CompanyPanel'
 import { FloorMap } from '../components/map/FloorMap'
 import { PanZoom } from '../components/map/PanZoom'
 import { Button } from '../components/ui/Button'
 
 export default function MapPage() {
+  const { locale, t } = useLocale()
   const { companies, update, remove } = useCompanies()
   const { visited, toggle } = useVisits()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -18,18 +21,17 @@ export default function MapPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6">
-      <h1 className="text-2xl font-semibold">Map</h1>
+      <h1 className="text-2xl font-semibold">{t.mapTitle}</h1>
       <p className="mt-1 text-[14px] text-[var(--muted)]">
-        Tap a hall to filter, tap a pin for the ask. Pin positions come from booth numbering, so they are
-        relative, not surveyed. Confirm on the{' '}
+        {t.mapNote}{' '}
         <a
           href="https://directory.imts.com/8_0/explore/floorplan.cfm"
           rel="noopener"
           className="text-[var(--accent-ink)] underline"
         >
-          official floor plan
+          {t.officialPlan}
         </a>{' '}
-        before you walk.
+        {t.beforeWalk}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -38,7 +40,7 @@ export default function MapPage() {
           selected={hallFilter === null}
           className="min-h-10 px-3 text-[14px]"
         >
-          All halls
+          {t.allHalls}
         </Button>
         {(Object.keys(HALL_NAMES) as Hall[]).map((hall) => (
           <Button
@@ -47,7 +49,7 @@ export default function MapPage() {
             selected={hallFilter === hall}
             className="min-h-10 px-3 text-[14px]"
           >
-            {HALL_NAMES[hall]}
+            {localHallName(hall, t)}
           </Button>
         ))}
       </div>
@@ -74,9 +76,9 @@ export default function MapPage() {
               onClick={() => setSelectedId(company.id)}
               className="flex cursor-pointer items-baseline gap-3 border-b border-[var(--line)] py-2.5 text-[14px]"
             >
-              <span className="min-w-16 font-semibold">{company.booths[0]}</span>
+              <span className="tnum min-w-16 font-semibold">{company.booths[0]}</span>
               <span className={`flex-1 ${visited[company.id] ? 'text-[var(--muted)] line-through' : ''}`}>
-                {company.name}
+                {localizeCompany(company, locale).name}
               </span>
             </li>
           ))}

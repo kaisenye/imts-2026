@@ -6,6 +6,7 @@ import type { Contact, OcrResult } from '../../lib/types'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
 import { ContactForm } from './ContactForm'
+import { useLocale } from '../../i18n/LocaleContext'
 
 interface Props {
   open: boolean
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClose }: Props) {
+  const { t } = useLocale()
   const fileInput = useRef<HTMLInputElement>(null)
   const [draft, setDraft] = useState<ContactDraft>({
     ...EMPTY_DRAFT,
@@ -37,7 +39,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
     const file = event.target.files?.[0]
     if (!file) return
     setBusy(true)
-    setStatus('Uploading…')
+    setStatus(t.uploading)
     try {
       const blob = await resizeImage(file)
       const path = `${crypto.randomUUID()}.jpg`
@@ -49,7 +51,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
       const { data } = supabase.storage.from(CARDS_BUCKET).getPublicUrl(path)
       setImageUrl(data.publicUrl)
 
-      setStatus('Reading card…')
+      setStatus(t.readingCard)
       const response = await fetch('/api/ocr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,7 +59,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
       })
 
       if (!response.ok) {
-        setStatus("Couldn't read the card — enter the details manually.")
+        setStatus(t.ocrFailed)
         return
       }
 
@@ -98,7 +100,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
   }
 
   return (
-    <Sheet open={open} title="Add contact" onClose={close}>
+    <Sheet open={open} title={t.addContact} onClose={close}>
       <input
         ref={fileInput}
         type="file"
@@ -121,7 +123,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
           disabled={busy}
           className="mb-4 w-full"
         >
-          Photograph card
+          {t.photographCard}
         </Button>
       )}
 

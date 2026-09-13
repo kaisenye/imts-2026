@@ -1,4 +1,5 @@
 import type { Note } from '../../lib/types'
+import { useLocale } from '../../i18n/LocaleContext'
 
 function formatStamp(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -10,8 +11,10 @@ function formatStamp(iso: string): string {
 }
 
 export function NoteList({ notes, onRemove }: { notes: Note[]; onRemove: (id: string) => void }) {
+  const { t } = useLocale()
+
   if (notes.length === 0) {
-    return <p className="py-4 text-[15px] text-[var(--muted)]">No notes yet.</p>
+    return <p className="py-4 text-[15px] text-[var(--muted)]">{t.noNotes}</p>
   }
   return (
     <ul className="mt-4 list-none p-0">
@@ -21,7 +24,7 @@ export function NoteList({ notes, onRemove }: { notes: Note[]; onRemove: (id: st
           <div className="mt-1 flex items-center gap-3 text-[13px] text-[var(--faint)]">
             <span>{formatStamp(note.created_at)}</span>
             <button onClick={() => onRemove(note.id)} className="underline">
-              Delete
+              {t.del}
             </button>
           </div>
         </li>

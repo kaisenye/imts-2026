@@ -1,6 +1,8 @@
 import { hallForBooths, type Hall } from '../../lib/hall'
 import type { Company } from '../../lib/types'
 import { HALL_RECTS, VIEWBOX, layoutPins } from '../../content/map'
+import { useLocale } from '../../i18n/LocaleContext'
+import { localHallName, localHallSub } from '../../i18n/company'
 
 interface Props {
   companies: Company[]
@@ -19,6 +21,7 @@ export function FloorMap({
   onSelect,
   onSelectHall,
 }: Props) {
+  const { t } = useLocale()
   const byHall = new Map<Hall, { company: Company; booth: string }[]>()
   for (const company of companies) {
     const hall = hallForBooths(company.booths)
@@ -65,10 +68,10 @@ export function FloorMap({
               stroke="var(--line)"
             />
             <text x={rect.x + 12} y={rect.y + 22} className="fill-[var(--ink)] text-[16px] font-semibold">
-              {rect.label}
+              {localHallName(hall, t)} · L3
             </text>
             <text x={rect.x + 12} y={rect.y + 38} className="fill-[var(--muted)] text-[11px]">
-              {rect.sub}
+              {localHallSub(hall, t)}
             </text>
           </g>
         )

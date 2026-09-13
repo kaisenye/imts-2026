@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useCompanies } from '../hooks/useCompanies'
 import { useLocale } from '../i18n/LocaleContext'
-import { LocaleSwitch } from '../components/LocaleSwitch'
 import { useVisits } from '../hooks/useVisits'
 import { DEFAULT_FILTERS, activeFilterCount, filterCompanies, type Filters } from '../lib/filter'
 import { TIER_ORDER, type Tier } from '../lib/types'
@@ -62,12 +61,9 @@ export default function Targets() {
             {t.targetsTitle}
           </h1>
         </div>
-        <div className="mb-1 flex items-center gap-2">
-          <LocaleSwitch className="lg:hidden" />
-        <Button onClick={() => setAddOpen(true)} className="min-h-10 px-3 text-[14px]">
+        <Button onClick={() => setAddOpen(true)} className="mb-1 min-h-10 px-3 text-[14px]">
           {t.add}
         </Button>
-        </div>
       </header>
 
       {/* Progress reads at a glance: how much of the floor is actually done. */}

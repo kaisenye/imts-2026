@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import type { Company, Tier } from '../../lib/types'
-import { TIER_LABELS, TIER_ORDER } from '../../lib/types'
+import { TIER_ORDER } from '../../lib/types'
 import { Field, TextArea } from '../ui/Field'
 import { Button } from '../ui/Button'
+import { useLocale } from '../../i18n/LocaleContext'
+import { tierLabel } from '../../i18n/company'
 
 interface Props {
   initial?: Company
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
+  const { t } = useLocale()
   const [name, setName] = useState(initial?.name ?? '')
   const [tier, setTier] = useState<Tier>(initial?.tier ?? 'A')
   const [booths, setBooths] = useState(initial?.booths.join(', ') ?? '')
@@ -24,7 +27,7 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (!name.trim()) {
-      setError('Name is required.')
+      setError(t.nameRequired)
       return
     }
     setSaving(true)
@@ -43,7 +46,7 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
         ask: ask.trim() || null,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save.')
+      setError(err instanceof Error ? err.message : t.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -51,32 +54,32 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <Field label="Company name" value={name} onChange={(e) => setName(e.target.value)} required />
+      <Field label={t.fieldCompanyName} value={name} onChange={(e) => setName(e.target.value)} required />
       <label className="block">
-        <span className="mb-1 block text-[13px] text-[var(--muted)]">Tier</span>
+        <span className="mb-1 block text-[13px] text-[var(--muted)]">{t.fieldTier}</span>
         <select
           value={tier}
           onChange={(e) => setTier(e.target.value as Tier)}
           className="min-h-11 w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 text-base"
         >
-          {TIER_ORDER.map((t) => (
-            <option key={t} value={t}>
-              {TIER_LABELS[t]}
+          {TIER_ORDER.map((tierOpt) => (
+            <option key={tierOpt} value={tierOpt}>
+              {tierLabel(tierOpt, t)}
             </option>
           ))}
         </select>
       </label>
       <Field
-        label="Booths (comma separated)"
+        label={t.fieldBooths}
         value={booths}
         onChange={(e) => setBooths(e.target.value)}
         placeholder="338536, 432212"
         inputMode="numeric"
       />
-      <Field label="Type" value={companyType} onChange={(e) => setCompanyType(e.target.value)} placeholder="Importer" />
-      <Field label="HQ" value={hq} onChange={(e) => setHq(e.target.value)} placeholder="Schaumburg, IL" />
+      <Field label={t.fieldType} value={companyType} onChange={(e) => setCompanyType(e.target.value)} placeholder="Importer" />
+      <Field label={t.fieldHq} value={hq} onChange={(e) => setHq(e.target.value)} placeholder="Schaumburg, IL" />
       <Field
-        label="Website"
+        label={t.fieldWebsite}
         type="url"
         inputMode="url"
         autoCapitalize="none"
@@ -85,14 +88,14 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
         onChange={(e) => setWebsite(e.target.value)}
         placeholder="yamazen.com"
       />
-      <TextArea label="The ask" value={ask} onChange={(e) => setAsk(e.target.value)} rows={3} />
+      <TextArea label={t.fieldAsk} value={ask} onChange={(e) => setAsk(e.target.value)} rows={3} />
       {error && <p className="text-[14px] text-[#b3372e]">{error}</p>}
       <div className="flex gap-3">
         <Button type="button" onClick={onCancel} className="flex-1">
-          Cancel
+          {t.cancel}
         </Button>
         <Button type="submit" variant="primary" disabled={saving} className="flex-1">
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t.saving : t.save}
         </Button>
       </div>
     </form>
