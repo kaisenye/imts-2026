@@ -13,7 +13,7 @@
 - [x] 11 Targets page
 - [x] 12 Company detail + notes
 - [x] 13 Card capture + OCR fn
-- [ ] 14 Contacts page
+- [x] 14 Contacts page
 - [ ] 15 Floor map
 - [ ] 16 Playbook content
 - [ ] 17 Deploy setup + verification

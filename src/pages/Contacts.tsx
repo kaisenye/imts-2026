@@ -67,14 +67,19 @@ export default function Contacts() {
       )}
       {loading && <Empty>Loading contacts…</Empty>}
       {!loading && contacts.length === 0 && <Empty>No cards captured yet.</Empty>}
+      {!loading && contacts.length > 0 && visible.length === 0 && (
+        <Empty>No contacts match “{q.trim()}”.</Empty>
+      )}
 
-      <ContactList
-        contacts={visible.map((c) => ({
-          ...c,
-          company_name: c.company_name ?? companyName(c.company_id),
-        }))}
-        onRemove={(id) => void remove(id)}
-      />
+      {visible.length > 0 && (
+        <ContactList
+          contacts={visible.map((c) => ({
+            ...c,
+            company_name: c.company_name ?? companyName(c.company_id),
+          }))}
+          onRemove={(id) => void remove(id)}
+        />
+      )}
 
       <CardCapture
         open={captureOpen}
