@@ -46,13 +46,17 @@ export function layoutPins(pins: PinInput[], hall: Hall): PlacedPin[] {
 
   // Seed each pin from its booth digits, then relax collisions.
   const placed: PlacedPin[] = pins.map(({ id, booth }) => {
+    // Within a hall the leading digit is constant, so the aisle pair alone
+    // collapses most booths into a couple of columns. Use the low digits for
+    // the across-aisle spread and the aisle pair for depth, which is closer to
+    // how the halls actually run.
     const digits = booth.replace(/\D/g, '')
     const aisle = Number(digits.slice(1, 3) || '0')
     const spot = Number(digits.slice(3) || '0')
     return {
       id,
-      x: rect.x + padX + ((aisle % 20) / 20) * usableW,
-      y: rect.y + padY + ((spot % 1000) / 1000) * usableH,
+      x: rect.x + padX + ((spot % 100) / 100) * usableW,
+      y: rect.y + padY + (((aisle * 37 + Math.floor(spot / 100)) % 100) / 100) * usableH,
     }
   })
 
