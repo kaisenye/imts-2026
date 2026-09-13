@@ -1,16 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useCompanies } from '../hooks/useCompanies'
 import { useVisits } from '../hooks/useVisits'
 import { DEFAULT_FILTERS, activeFilterCount, filterCompanies, type Filters } from '../lib/filter'
-import { hallForBooths, hallName } from '../lib/hall'
-import { websiteHref, websiteLabel } from '../lib/website'
 import { TIER_NAMES, TIER_ORDER, TIER_SUBS, type Tier } from '../lib/types'
 import { CompanyRow } from '../components/company/CompanyRow'
-import { CompanyCard } from '../components/company/CompanyCard'
+import { CompanyPanel } from '../components/company/CompanyPanel'
 import { FilterSheet } from '../components/company/FilterSheet'
 import { CompanyForm } from '../components/company/CompanyForm'
-import { Panel } from '../components/ui/Panel'
 import { Sheet } from '../components/ui/Sheet'
 import { Button } from '../components/ui/Button'
 import { ErrorBanner } from '../components/ui/ErrorBanner'
@@ -163,70 +159,12 @@ export default function Targets() {
         </section>
       ))}
 
-      <Panel
-        open={!!selected}
-        title={selected?.name ?? ''}
-        subtitle={
-          selected && (
-            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="tnum font-medium text-[var(--accent-ink)]">
-                {selected.booths.join('  ')}
-              </span>
-              <span className="uppercase tracking-[0.08em] text-[var(--faint)]">
-                {hallName(hallForBooths(selected.booths))}
-              </span>
-              {selected.hq && <span>· {selected.hq}</span>}
-              {websiteHref(selected.website) && (
-                <a
-                  href={websiteHref(selected.website)!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[var(--accent-ink)] underline underline-offset-2 hover:text-[var(--accent)]"
-                >
-                  {websiteLabel(selected.website)}
-                  <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
-                    <path
-                      d="M3 1h6v6M9 1L1.5 8.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </a>
-              )}
-            </span>
-          )
-        }
+      <CompanyPanel
+        company={selected}
+        visited={!!selected && !!visited[selected.id]}
+        onToggleVisited={() => selected && void toggle(selected.id)}
         onClose={() => setOpenId(null)}
-        footer={
-          selected && (
-            <div className="flex items-center gap-3">
-              <label className="flex flex-1 items-center gap-2.5 text-[14px]">
-                <input
-                  type="checkbox"
-                  checked={!!visited[selected.id]}
-                  onChange={() => void toggle(selected.id)}
-                  className="h-[18px] w-[18px] accent-[var(--accent)]"
-                />
-                Visited
-              </label>
-              <Link
-                to={`/company/${selected.id}`}
-                className="
-                  flex min-h-11 items-center rounded-lg bg-[var(--accent)] px-4 text-[14px]
-                  font-medium text-white transition-opacity duration-150 hover:opacity-90
-                "
-              >
-                Notes &amp; contacts
-              </Link>
-            </div>
-          )
-        }
-      >
-        {selected && <CompanyCard company={selected} />}
-      </Panel>
+      />
 
       <FilterSheet
         open={filtersOpen}

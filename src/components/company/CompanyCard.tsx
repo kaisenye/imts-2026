@@ -11,7 +11,14 @@ function Label({ children }: { children: React.ReactNode }) {
 export function CompanyCard({ company }: { company: Company }) {
   return (
     <div className="text-[15px] leading-relaxed">
-      {company.bio && <p className="text-[var(--muted)]">{company.bio}</p>}
+      {/* The one-line summary leads: it is the whole pitch when there is no
+          time to read further, and for a company added by hand it may be the
+          only thing filled in. */}
+      {company.ask && <p className="font-medium">{company.ask}</p>}
+
+      {company.bio && (
+        <p className={`text-[var(--muted)] ${company.ask ? 'mt-2.5' : ''}`}>{company.bio}</p>
+      )}
 
       {company.fit && (
         <>

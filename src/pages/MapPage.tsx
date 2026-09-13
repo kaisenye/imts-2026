@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useCompanies } from '../hooks/useCompanies'
 import { useVisits } from '../hooks/useVisits'
 import { HALL_NAMES, hallForBooths, type Hall } from '../lib/hall'
+import { CompanyPanel } from '../components/company/CompanyPanel'
 import { FloorMap } from '../components/map/FloorMap'
 import { PanZoom } from '../components/map/PanZoom'
-import { Sheet } from '../components/ui/Sheet'
 import { Button } from '../components/ui/Button'
 
 export default function MapPage() {
@@ -83,31 +82,12 @@ export default function MapPage() {
           ))}
       </ul>
 
-      <Sheet open={!!selected} title={selected?.name ?? ''} onClose={() => setSelectedId(null)}>
-        {selected && (
-          <div className="text-[15px]">
-            <p className="text-[var(--muted)]">
-              {selected.booths.join(' · ')} · {HALL_NAMES[hallForBooths(selected.booths) ?? 'W']}
-            </p>
-            {selected.ask && <p className="mt-3">{selected.ask}</p>}
-            <label className="mt-4 flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={!!visited[selected.id]}
-                onChange={() => void toggle(selected.id)}
-                className="h-5 w-5 accent-[var(--accent)]"
-              />
-              Visited
-            </label>
-            <Link
-              to={`/company/${selected.id}`}
-              className="mt-4 inline-block text-[14px] font-medium text-[var(--accent-ink)] underline"
-            >
-              Notes &amp; contacts →
-            </Link>
-          </div>
-        )}
-      </Sheet>
+      <CompanyPanel
+        company={selected}
+        visited={!!selected && !!visited[selected.id]}
+        onToggleVisited={() => selected && void toggle(selected.id)}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   )
 }
