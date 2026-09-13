@@ -8,6 +8,7 @@ visit tracking, notes, and business-card capture with OCR.
 1. **Supabase** — create a project, then in the SQL editor run, in order:
    - `supabase/schema.sql` — tables, indexes, RLS policies, storage bucket
    - `supabase/seed.sql` — the 88 default target companies
+   - `supabase/websites.sql` — company websites (optional; 68 of 88)
 
 2. **Environment** — copy `.env.example` to `.env` and fill in:
    - `VITE_SUPABASE_URL` — project URL
