@@ -1769,9 +1769,9 @@ export function Sheet({ open, title, onClose, children }: Props) {
 import { Link } from 'react-router-dom'
 import type { Company } from '../../lib/types'
 
-export function CompanyCard({ company }: { company: Company }) {
+export function CompanyCard({ company, indent }: { company: Company; indent?: boolean }) {
   return (
-    <div className="pb-4 pl-8 text-[15px]">
+    <div className={`pb-4 text-[15px] ${indent ? 'pl-8' : ''}`}>
       {(company.company_type || company.hq) && (
         <p className="mb-2 text-[13px] text-[var(--muted)]">
           {[company.company_type, company.hq].filter(Boolean).join(' · ')}
@@ -1875,7 +1875,7 @@ export function CompanyRow({ company, visited, open, onToggleOpen, onToggleVisit
         </button>
         <span className="pt-1 text-[13px] text-[var(--faint)]">{open ? '−' : '+'}</span>
       </div>
-      {open && <CompanyCard company={company} />}
+      {open && <CompanyCard company={company} indent />}
     </li>
   )
 }
@@ -2395,7 +2395,7 @@ export default function Company() {
         </p>
       )}
 
-      <div className="mt-4 -ml-8">
+      <div className="mt-4">
         <CompanyCard company={company} />
       </div>
 

@@ -11,7 +11,7 @@
 - [x] 9  Passcode gate + nav shell
 - [x] 10 Data hooks
 - [x] 11 Targets page
-- [ ] 12 Company detail + notes
+- [x] 12 Company detail + notes
 - [x] 13 Card capture + OCR fn
 - [ ] 14 Contacts page
 - [ ] 15 Floor map

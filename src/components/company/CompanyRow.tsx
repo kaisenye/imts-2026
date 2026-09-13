@@ -38,7 +38,7 @@ export function CompanyRow({ company, visited, open, onToggleOpen, onToggleVisit
         </button>
         <span className="pt-1 text-[13px] text-[var(--faint)]">{open ? '−' : '+'}</span>
       </div>
-      {open && <CompanyCard company={company} />}
+      {open && <CompanyCard company={company} indent />}
     </li>
   )
 }

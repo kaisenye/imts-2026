@@ -14,11 +14,12 @@ import { CardCapture } from '../components/contacts/CardCapture'
 import { Sheet } from '../components/ui/Sheet'
 import { Button } from '../components/ui/Button'
 import { Empty } from '../components/ui/Empty'
+import { ErrorBanner } from '../components/ui/ErrorBanner'
 
 export default function Company() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { companies, loading, update, remove } = useCompanies()
+  const { companies, loading, error, reload, update, remove } = useCompanies()
   const { visited, toggle } = useVisits()
   const { notes, add: addNote, remove: removeNote } = useNotes(id)
   const { contacts, add: addContact, remove: removeContact } = useContacts(id)
@@ -28,6 +29,13 @@ export default function Company() {
   const company = companies.find((c) => c.id === id)
 
   if (loading) return <Empty>Loading…</Empty>
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 pt-6">
+        <ErrorBanner message={error} onRetry={reload} />
+      </div>
+    )
+  }
   if (!company) return <Empty>Company not found.</Empty>
 
   const onDelete = async () => {
@@ -75,7 +83,7 @@ export default function Company() {
         </p>
       )}
 
-      <div className="mt-4 -ml-8">
+      <div className="mt-4">
         <CompanyCard company={company} />
       </div>
 
