@@ -1610,7 +1610,11 @@ export function useNotes(companyId: string | undefined) {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    if (!companyId) return
+    if (!companyId) {
+      setNotes([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     const { data, error: err } = await supabase
       .from('notes')

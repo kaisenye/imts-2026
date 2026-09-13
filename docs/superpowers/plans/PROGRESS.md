@@ -9,7 +9,7 @@
 - [x] 7  CSV export (TDD)
 - [x] 8  OCR merge (TDD)
 - [x] 9  Passcode gate + nav shell
-- [ ] 10 Data hooks
+- [x] 10 Data hooks
 - [ ] 11 Targets page
 - [ ] 12 Company detail + notes
 - [ ] 13 Card capture + OCR fn
