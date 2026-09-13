@@ -13,7 +13,7 @@ import { ErrorBanner } from '../components/ui/ErrorBanner'
 import { Empty } from '../components/ui/Empty'
 
 export default function Targets() {
-  const { companies, loading, error, reload, create } = useCompanies()
+  const { companies, loading, error, reload, create, update, remove } = useCompanies()
   const { visited, toggle } = useVisits()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -164,6 +164,8 @@ export default function Targets() {
         visited={!!selected && !!visited[selected.id]}
         onToggleVisited={() => selected && void toggle(selected.id)}
         onClose={() => setOpenId(null)}
+        onUpdate={update}
+        onRemove={remove}
       />
 
       <FilterSheet

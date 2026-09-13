@@ -8,7 +8,7 @@ import { PanZoom } from '../components/map/PanZoom'
 import { Button } from '../components/ui/Button'
 
 export default function MapPage() {
-  const { companies } = useCompanies()
+  const { companies, update, remove } = useCompanies()
   const { visited, toggle } = useVisits()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [hallFilter, setHallFilter] = useState<Hall | null>(null)
@@ -87,6 +87,8 @@ export default function MapPage() {
         visited={!!selected && !!visited[selected.id]}
         onToggleVisited={() => selected && void toggle(selected.id)}
         onClose={() => setSelectedId(null)}
+        onUpdate={update}
+        onRemove={remove}
       />
     </div>
   )

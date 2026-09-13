@@ -5,7 +5,6 @@ import { Sidebar } from './components/nav/Sidebar'
 import Playbook from './pages/Playbook'
 import MapPage from './pages/MapPage'
 import Targets from './pages/Targets'
-import Company from './pages/Company'
 import Contacts from './pages/Contacts'
 
 export default function App() {
@@ -18,7 +17,6 @@ export default function App() {
             <Route path="/" element={<Playbook />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/targets" element={<Targets />} />
-            <Route path="/company/:id" element={<Company />} />
             <Route path="/contacts" element={<Contacts />} />
           </Routes>
         </main>
