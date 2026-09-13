@@ -26,7 +26,7 @@ export default function MapPage() {
         <a
           href="https://directory.imts.com/8_0/explore/floorplan.cfm"
           rel="noopener"
-          className="text-[var(--color-accent-ink)] underline"
+          className="text-[var(--accent-ink)] underline"
         >
           official floor plan
         </a>{' '}
@@ -36,7 +36,8 @@ export default function MapPage() {
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
           onClick={() => setHallFilter(null)}
-          className={`min-h-10 px-3 text-[14px] ${hallFilter === null ? 'border-[var(--color-accent)] text-[var(--color-accent-ink)]' : ''}`}
+          selected={hallFilter === null}
+          className="min-h-10 px-3 text-[14px]"
         >
           All halls
         </Button>
@@ -44,7 +45,8 @@ export default function MapPage() {
           <Button
             key={hall}
             onClick={() => setHallFilter(hallFilter === hall ? null : hall)}
-            className={`min-h-10 px-3 text-[14px] ${hallFilter === hall ? 'border-[var(--color-accent)] text-[var(--color-accent-ink)]' : ''}`}
+            selected={hallFilter === hall}
+            className="min-h-10 px-3 text-[14px]"
           >
             {HALL_NAMES[hall]}
           </Button>
@@ -93,13 +95,13 @@ export default function MapPage() {
                 type="checkbox"
                 checked={!!visited[selected.id]}
                 onChange={() => void toggle(selected.id)}
-                className="h-5 w-5 accent-[var(--color-accent)]"
+                className="h-5 w-5 accent-[var(--accent)]"
               />
               Visited
             </label>
             <Link
               to={`/company/${selected.id}`}
-              className="mt-4 inline-block text-[14px] font-medium text-[var(--color-accent-ink)] underline"
+              className="mt-4 inline-block text-[14px] font-medium text-[var(--accent-ink)] underline"
             >
               Notes &amp; contacts →
             </Link>

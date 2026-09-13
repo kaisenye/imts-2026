@@ -7,23 +7,40 @@ const TABS = [
   { to: '/contacts', label: 'Contacts', end: false },
 ]
 
+/**
+ * Floating pill rather than an edge-to-edge bar: it sits clear of the home
+ * indicator, and the inset makes the whole control reachable with one thumb.
+ */
 export function BottomTabs() {
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 flex border-t border-[var(--line)] bg-[var(--bg)] lg:hidden">
-      {TABS.map((tab) => (
-        <NavLink
-          key={tab.to}
-          to={tab.to}
-          end={tab.end}
-          className={({ isActive }) =>
-            `flex min-h-14 flex-1 items-center justify-center text-[13px] font-medium ${
-              isActive ? 'text-[var(--color-accent-ink)]' : 'text-[var(--muted)]'
-            }`
-          }
-        >
-          {tab.label}
-        </NavLink>
-      ))}
+    <nav
+      className="fixed inset-x-0 bottom-0 z-30 px-3 lg:hidden"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.6rem)' }}
+    >
+      <div
+        className="
+          mx-auto flex max-w-md items-center gap-1 rounded-full border border-[var(--line-strong)]
+          bg-[var(--raised)]/92 p-1.5 backdrop-blur-md
+          shadow-[0_6px_24px_rgb(22_25_26/0.13),0_1px_2px_rgb(22_25_26/0.07)]
+        "
+      >
+        {TABS.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end={tab.end}
+            className={({ isActive }) =>
+              `flex min-h-11 flex-1 items-center justify-center rounded-full px-2 text-[12.5px] font-medium transition-colors duration-200 ${
+                isActive
+                  ? 'bg-[var(--accent)] text-white'
+                  : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]'
+              }`
+            }
+          >
+            {tab.label}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   )
 }

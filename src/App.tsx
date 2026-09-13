@@ -13,7 +13,7 @@ export default function App() {
     <PasscodeGate>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="min-w-0 flex-1 pb-20 lg:pb-8">
+        <main className="min-w-0 flex-1 pb-28 lg:pb-10">
           <Routes>
             <Route path="/" element={<Playbook />} />
             <Route path="/map" element={<MapPage />} />

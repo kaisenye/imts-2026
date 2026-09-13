@@ -27,7 +27,7 @@ function Goal({ children }: { children: ReactNode }) {
 
 function Ev({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded bg-[var(--color-accent-soft)] px-1.5 py-0.5 font-medium text-[var(--color-accent-ink)]">
+    <span className="rounded bg-[var(--accent-soft)] px-1.5 py-0.5 font-medium text-[var(--accent-ink)]">
       {children}
     </span>
   )

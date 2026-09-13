@@ -40,6 +40,7 @@ export interface Company {
   opening_line: string | null
   asks: string[] | null
   watch_out: string | null
+  website: string | null
   is_default: boolean
   archived: boolean
   created_at: string

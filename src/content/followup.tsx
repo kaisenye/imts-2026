@@ -6,7 +6,7 @@ function A({ href, children }: { href: string; children: ReactNode }) {
       href={href}
       rel="noopener"
       target="_blank"
-      className="text-[var(--color-accent-ink)] underline underline-offset-2"
+      className="text-[var(--accent-ink)] underline underline-offset-2"
     >
       {children}
     </a>

@@ -1,31 +1,48 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   HIPPSC field playbook — "industrial field manual"
+
+   Used standing up, one-handed, in a loud hall, mid-conversation. So: warm
+   paper ground rather than clinical white, machinist red as a second signal
+   colour beside the green, and one sans family throughout, with weight and
+   size — not typeface — carrying the hierarchy. Motion is fast and
+   functional: it confirms a tap landed, it does not decorate.
+--------------------------------------------------------------------------- */
+
 @theme {
-  --font-sans: Inter, system-ui, -apple-system, sans-serif;
-  --color-accent: #1b7f4b;
-  --color-accent-ink: #166b3f;
-  --color-accent-soft: #e7f3ec;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-accent: #1a7a4a;
+  --color-accent-ink: #12603a;
+  --color-accent-soft: #e4f0e8;
+  --color-flag: #b3372e;
 }
 
 :root {
-  --bg: #ffffff;
-  --surface: #fafafa;
-  --ink: #111512;
-  --muted: #6a716c;
-  --faint: #9aa19c;
-  --line: #e6e9e7;
-  color-scheme: light dark;
-}
+  color-scheme: light;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d0f0e;
-    --surface: #161918;
-    --ink: #f2f4f3;
-    --muted: #9aa19c;
-    --faint: #6a716c;
-    --line: #262b29;
-  }
+  /* Warm paper, not white. Reads better under hall lighting and stops the
+     page glowing in a dim aisle. */
+  --bg: #fbfaf7;
+  --surface: #f4f2ed;
+  --raised: #ffffff;
+  --ink: #16191a;
+  --muted: #5f6664;
+  --faint: #8f9693;
+  --line: #e2e0d9;
+  --line-strong: #cfccc2;
+
+  --accent: #1a7a4a;
+  --accent-ink: #12603a;
+  --accent-soft: #e4f0e8;
+  --flag: #b3372e;
+  --flag-soft: #fbeeec;
+
+  --shadow-sheet: 0 -8px 40px rgb(22 25 26 / 0.16);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 html {
@@ -41,12 +58,212 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
+
+  /* Faint paper grain. Invisible as texture, but it stops large flat areas
+     looking like dead screen space. */
+  background-image: radial-gradient(rgb(22 25 26 / 0.018) 1px, transparent 1px);
+  background-size: 3px 3px;
 }
 
-input, select, textarea {
-  font-size: 16px;
+input,
+select,
+textarea {
+  font-size: 16px; /* below 16px iOS zooms the viewport on focus */
+  font-family: inherit;
+}
+
+/* Anything that responds to a tap says so. */
+button:not(:disabled),
+a[href],
+label:has(input[type="checkbox"]),
+input[type="checkbox"],
+[role="button"]:not([aria-disabled="true"]),
+summary,
+.tappable {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* No focus rings on controls — they read as stuck selection state on a
+   touch device, where every tap would leave one behind. Text fields keep a
+   border cue instead, because you do need to know which one you are typing
+   into. */
+:focus,
+:focus-visible {
+  outline: none;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+}
+
+/* Hover feedback on anything tappable. Pointer-only so a touch tap does not
+   leave an element stuck in a hover state after the finger lifts. */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled),
+  a[href],
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  .tappable {
+    transition:
+      background-color 0.15s var(--ease-out),
+      border-color 0.15s var(--ease-out),
+      color 0.15s var(--ease-out),
+      opacity 0.15s var(--ease-out);
+  }
+
+  a[href]:hover,
+  button:not(:disabled):hover,
+  .tappable:hover {
+    /* Components set their own hover colour; this is the floor for anything
+       that does not. */
+    opacity: 0.88;
+  }
+
+  input[type="checkbox"]:not(:disabled):hover {
+    filter: brightness(0.94);
+  }
+}
+
+/* Pressing anything gives a small, immediate physical response. */
+button:not(:disabled):active,
+a[href]:active,
+.tappable:active {
+  transform: translateY(0.5px);
 }
 
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Sticky footers need real padding as well as the notch inset — the inset is
+   0 on desktop, which leaves the action button flush against the edge. */
+.footer-pad {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+.font-display {
+  font-weight: 600;
+  letter-spacing: -0.021em;
+}
+
+.tnum {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+/* --- motion ---------------------------------------------------------------
+   Short, eased, and cheap. Rows stagger in on first paint so a 88-row list
+   resolves as a sweep instead of a flash. Everything respects reduced-motion.
+-------------------------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Side panel slides in from the right edge. Kept short and shallow — a full
+   off-screen travel reads as heavy when you are opening 40 records an hour. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes veil {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes expand {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.34s var(--ease-out) both;
+}
+
+.animate-sheet {
+  animation: sheet-up 0.32s var(--ease-out) both;
+}
+
+/* Bottom sheet under lg, horizontal slide from lg up. */
+@media (min-width: 1024px) {
+  .animate-sheet.lg-slide-x {
+    animation: panel-in 0.24s var(--ease-out) both;
+  }
+}
+
+.animate-veil {
+  animation: veil 0.2s linear both;
+}
+
+.animate-expand {
+  animation: expand 0.22s var(--ease-out) both;
+}
+
+/* Stagger the first rows only — past ~14 the delay would outlast the scroll. */
+.stagger > *:nth-child(1) { animation-delay: 0ms }
+.stagger > *:nth-child(2) { animation-delay: 22ms }
+.stagger > *:nth-child(3) { animation-delay: 44ms }
+.stagger > *:nth-child(4) { animation-delay: 66ms }
+.stagger > *:nth-child(5) { animation-delay: 88ms }
+.stagger > *:nth-child(6) { animation-delay: 110ms }
+.stagger > *:nth-child(7) { animation-delay: 132ms }
+.stagger > *:nth-child(8) { animation-delay: 154ms }
+.stagger > *:nth-child(9) { animation-delay: 176ms }
+.stagger > *:nth-child(10) { animation-delay: 198ms }
+.stagger > *:nth-child(n + 11) { animation-delay: 220ms }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

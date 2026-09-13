@@ -65,7 +65,7 @@ export default function Company() {
             type="checkbox"
             checked={!!visited[company.id]}
             onChange={() => void toggle(company.id)}
-            className="h-5 w-5 accent-[var(--color-accent)]"
+            className="h-5 w-5 accent-[var(--accent)]"
           />
           Visited
         </label>
@@ -76,7 +76,7 @@ export default function Company() {
           Archived.{' '}
           <button
             onClick={() => void update(company.id, { archived: false })}
-            className="text-[var(--color-accent-ink)] underline"
+            className="text-[var(--accent-ink)] underline"
           >
             Restore
           </button>

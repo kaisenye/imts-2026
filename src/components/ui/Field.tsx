@@ -1,17 +1,28 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
+const CONTROL = `
+  w-full rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] text-base
+  text-[var(--ink)] transition-colors duration-150
+  placeholder:text-[var(--faint)] hover:border-[var(--muted)]
+`
+
+function Label({ children }: { children: string }) {
+  return (
+    <span className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.07em] text-[var(--muted)]">
+      {children}
+    </span>
+  )
+}
+
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
 }
 
-export function Field({ label, ...rest }: FieldProps) {
+export function Field({ label, className = '', ...rest }: FieldProps) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[13px] text-[var(--muted)]">{label}</span>
-      <input
-        {...rest}
-        className="min-h-11 w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 text-base text-[var(--ink)]"
-      />
+      <Label>{label}</Label>
+      <input {...rest} className={`${CONTROL} min-h-11 px-3 ${className}`} />
     </label>
   )
 }
@@ -20,14 +31,11 @@ interface AreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string
 }
 
-export function TextArea({ label, ...rest }: AreaProps) {
+export function TextArea({ label, className = '', ...rest }: AreaProps) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[13px] text-[var(--muted)]">{label}</span>
-      <textarea
-        {...rest}
-        className="w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] p-3 text-base text-[var(--ink)]"
-      />
+      <Label>{label}</Label>
+      <textarea {...rest} className={`${CONTROL} resize-y p-3 leading-relaxed ${className}`} />
     </label>
   )
 }

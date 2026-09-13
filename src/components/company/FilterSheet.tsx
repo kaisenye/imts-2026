@@ -32,17 +32,22 @@ function Group<T extends string>({
 }) {
   return (
     <div className="mb-5">
-      <div className="mb-2 text-[13px] text-[var(--muted)]">{label}</div>
+      <div className="mb-2 text-[12px] font-medium uppercase tracking-[0.07em] text-[var(--muted)]">{label}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <button
             key={option.value}
             onClick={() => onSelect(option.value)}
-            className={`min-h-10 rounded-full border px-3 text-[14px] ${
-              value === option.value
-                ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)]'
-                : 'border-[var(--line)] text-[var(--muted)]'
-            }`}
+            aria-pressed={value === option.value}
+            className={`
+              min-h-10 rounded-full border px-3.5 text-[14px] font-medium
+              transition-colors duration-150
+              ${
+                value === option.value
+                  ? 'border-[var(--accent)] bg-[var(--accent)] text-white hover:bg-[var(--accent-ink)]'
+                  : 'border-[var(--line-strong)] bg-[var(--raised)] text-[var(--muted)] hover:border-[var(--muted)] hover:text-[var(--ink)]'
+              }
+            `}
           >
             {option.label}
           </button>

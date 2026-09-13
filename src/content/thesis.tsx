@@ -1,6 +1,6 @@
 export default function Thesis() {
   return (
-    <div className="border-l-2 border-[var(--color-accent)] pl-4">
+    <div className="border-l-2 border-[var(--accent)] pl-4">
       <p className="my-2 text-[19px] leading-relaxed">
         <strong>We are walkers, not exhibitors.</strong> Six days, two people, 1,752 booths. The job is not to be
         seen by everyone. It is to have 40–60 real conversations, walk out with 10 hot leads, open 3 channel or

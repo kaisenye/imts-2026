@@ -20,15 +20,36 @@ const SECTIONS: { id: string; title: string; body: ReactNode; openByDefault?: bo
 function Section({ title, body, openByDefault }: { title: string; body: ReactNode; openByDefault?: boolean }) {
   const [open, setOpen] = useState(!!openByDefault)
   return (
-    <section className="mt-6">
+    <section className="mt-7">
       <button
         onClick={() => setOpen(!open)}
-        className="flex min-h-[44px] w-full items-center justify-between border-b border-[var(--ink)] pb-2 text-left"
+        className="
+          group flex min-h-[44px] w-full items-center justify-between gap-3
+          border-b-2 border-[var(--ink)] pb-2 text-left
+          transition-colors duration-150 hover:border-[var(--accent)]
+        "
       >
-        <h2 className="text-[22px] font-semibold">{title}</h2>
-        <span className="text-[var(--faint)]">{open ? '−' : '+'}</span>
+        <h2 className="font-display text-[21px] leading-tight transition-colors duration-150 group-hover:text-[var(--accent-ink)]">
+          {title}
+        </h2>
+        <span
+          aria-hidden="true"
+          className={`shrink-0 text-[var(--faint)] transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        >
+          <svg width="12" height="8" viewBox="0 0 12 8">
+            <path
+              d="M1 1.5L6 6.5l5-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
       </button>
-      {open && <div className="mt-3">{body}</div>}
+      {open && <div className="animate-expand mt-3">{body}</div>}
     </section>
   )
 }
@@ -36,15 +57,16 @@ function Section({ title, body, openByDefault }: { title: string; body: ReactNod
 export default function Playbook() {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent-ink)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-ink)]">
         HIPPSC · IMTS 2026
       </p>
-      <h1 className="mt-1 text-[clamp(30px,7vw,42px)] font-semibold leading-tight tracking-tight">
+      <h1 className="font-display mt-1 text-[clamp(32px,8vw,46px)] leading-[0.98]">
         Field Playbook
       </h1>
-      <p className="mt-2 text-[14px] text-[var(--muted)]">
+      <p className="mt-2.5 text-[13.5px] text-[var(--muted)]">
         McCormick Place, Chicago · September 14–19, 2026
       </p>
+      <div className="mt-5 h-px bg-[var(--line-strong)]" />
 
       {SECTIONS.map((section) => (
         <Section

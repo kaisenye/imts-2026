@@ -16,6 +16,7 @@ const make = (over: Partial<Company>): Company => ({
   opening_line: null,
   asks: null,
   watch_out: null,
+  website: null,
   is_default: true,
   archived: false,
   created_at: '2026-01-01T00:00:00Z',

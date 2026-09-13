@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 function Script({ lab, children }: { lab: string; children: ReactNode }) {
   return (
     <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4">
-      <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent-ink)]">
+      <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--accent-ink)]">
         {lab}
       </div>
       {children}

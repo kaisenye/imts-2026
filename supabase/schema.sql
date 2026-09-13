@@ -15,6 +15,7 @@ create table if not exists companies (
   opening_line  text,
   asks          text[],
   watch_out     text,
+  website       text,
   is_default    boolean not null default false,
   archived      boolean not null default false,
   created_at    timestamptz not null default now()

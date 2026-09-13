@@ -17,6 +17,7 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
   const [companyType, setCompanyType] = useState(initial?.company_type ?? '')
   const [hq, setHq] = useState(initial?.hq ?? '')
   const [ask, setAsk] = useState(initial?.ask ?? '')
+  const [website, setWebsite] = useState(initial?.website ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,6 +39,7 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
           .filter(Boolean),
         company_type: companyType.trim() || null,
         hq: hq.trim() || null,
+        website: website.trim() || null,
         ask: ask.trim() || null,
       })
     } catch (err) {
@@ -73,6 +75,16 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
       />
       <Field label="Type" value={companyType} onChange={(e) => setCompanyType(e.target.value)} placeholder="Importer" />
       <Field label="HQ" value={hq} onChange={(e) => setHq(e.target.value)} placeholder="Schaumburg, IL" />
+      <Field
+        label="Website"
+        type="url"
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        placeholder="yamazen.com"
+      />
       <TextArea label="The ask" value={ask} onChange={(e) => setAsk(e.target.value)} rows={3} />
       {error && <p className="text-[14px] text-[#b3372e]">{error}</p>}
       <div className="flex gap-3">

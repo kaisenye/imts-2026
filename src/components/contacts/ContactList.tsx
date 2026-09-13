@@ -29,12 +29,12 @@ export function ContactList({
               </div>
             )}
             {contact.email && (
-              <a href={`mailto:${contact.email}`} className="block text-[14px] text-[var(--color-accent-ink)]">
+              <a href={`mailto:${contact.email}`} className="block text-[14px] text-[var(--accent-ink)]">
                 {contact.email}
               </a>
             )}
             {contact.phone && (
-              <a href={`tel:${contact.phone}`} className="block text-[14px] text-[var(--color-accent-ink)]">
+              <a href={`tel:${contact.phone}`} className="block text-[14px] text-[var(--accent-ink)]">
                 {contact.phone}
               </a>
             )}

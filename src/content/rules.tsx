@@ -8,7 +8,7 @@ export default function Rules() {
       </p>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4">
-          <b className="block text-[var(--color-accent-ink)]">Fine</b>
+          <b className="block text-[var(--accent-ink)]">Fine</b>
           <ul className="mt-2 list-disc space-y-2 pl-5 leading-relaxed">
             <li>Conversations anywhere. Cards one-to-one.</li>
             <li>Samples in a backpack. Show one when asked or invited into a booth.</li>

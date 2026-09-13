@@ -61,7 +61,7 @@ export function FloorMap({
               width={rect.w}
               height={rect.h}
               rx={4}
-              fill={active ? 'var(--color-accent-soft)' : 'var(--surface)'}
+              fill={active ? 'var(--accent-soft)' : 'var(--surface)'}
               stroke="var(--line)"
             />
             <text x={rect.x + 12} y={rect.y + 22} className="fill-[var(--ink)] text-[16px] font-semibold">
@@ -91,8 +91,8 @@ export function FloorMap({
               cx={x}
               cy={y}
               r={isSelected ? 9 : 6}
-              fill={isVisited ? 'var(--color-accent)' : 'var(--bg)'}
-              stroke="var(--color-accent)"
+              fill={isVisited ? 'var(--accent)' : 'var(--bg)'}
+              stroke="var(--accent)"
               strokeWidth={isSelected ? 2.5 : 1.5}
             />
           </g>
