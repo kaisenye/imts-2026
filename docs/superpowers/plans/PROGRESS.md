@@ -16,4 +16,4 @@
 - [x] 14 Contacts page
 - [x] 15 Floor map
 - [x] 16 Playbook content
-- [ ] 17 Deploy setup + verification
+- [x] 17 Deploy setup + verification
