@@ -8,7 +8,7 @@
 - [x] 6  Filter logic (TDD)
 - [x] 7  CSV export (TDD)
 - [x] 8  OCR merge (TDD)
-- [ ] 9  Passcode gate + nav shell
+- [x] 9  Passcode gate + nav shell
 - [ ] 10 Data hooks
 - [ ] 11 Targets page
 - [ ] 12 Company detail + notes
