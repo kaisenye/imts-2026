@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { hallForBooths, hallName } from '../../lib/hall'
+import { hallForBooths } from '../../lib/hall'
 import { websiteHref, websiteLabel } from '../../lib/website'
 import { useNotes } from '../../hooks/useNotes'
 import { useContacts } from '../../hooks/useContacts'
 import type { Company } from '../../lib/types'
+import { useLocale } from '../../i18n/LocaleContext'
+import { localizeCompany, localHallName } from '../../i18n/company'
 import { Panel } from '../ui/Panel'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
@@ -39,6 +41,7 @@ export function CompanyPanel({
   onUpdate,
   onRemove,
 }: Props) {
+  const { locale, t } = useLocale()
   const [tab, setTab] = useState<Tab>('brief')
   const [editOpen, setEditOpen] = useState(false)
   const [captureOpen, setCaptureOpen] = useState(false)
@@ -53,28 +56,29 @@ export function CompanyPanel({
   }, [id])
 
   const href = websiteHref(company?.website ?? null)
+  const c = company ? localizeCompany(company, locale) : null
 
   const onDelete = async () => {
     if (!company) return
     const label = company.is_default
-      ? `Archive ${company.name}? Its notes and contacts are kept.`
-      : `Delete ${company.name} and all its notes? This cannot be undone.`
+      ? t.confirmArchive(company.name)
+      : t.confirmDelete(company.name)
     if (!confirm(label)) return
     await onRemove(company)
     onClose()
   }
 
   const TABS: { key: Tab; label: string; count?: number }[] = [
-    { key: 'brief', label: 'Brief' },
-    { key: 'notes', label: 'Notes', count: notes.length },
-    { key: 'contacts', label: 'Contacts', count: contacts.length },
+    { key: 'brief', label: t.tabBrief },
+    { key: 'notes', label: t.tabNotes, count: notes.length },
+    { key: 'contacts', label: t.tabContacts, count: contacts.length },
   ]
 
   return (
     <>
       <Panel
         open={!!company}
-        title={company?.name ?? ''}
+        title={c?.name ?? ''}
         subtitle={
           company && (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -82,7 +86,7 @@ export function CompanyPanel({
                 {company.booths.join('  ')}
               </span>
               <span className="uppercase tracking-[0.08em] text-[var(--faint)]">
-                {hallName(hallForBooths(company.booths))}
+                {localHallName(hallForBooths(company.booths), t)}
               </span>
               {company.hq && <span>· {company.hq}</span>}
               {href && (
@@ -119,19 +123,19 @@ export function CompanyPanel({
                   onChange={onToggleVisited}
                   className="h-[18px] w-[18px] accent-[var(--accent)]"
                 />
-                Visited
+                {t.visited}
               </label>
               {tab === 'contacts' ? (
                 <Button variant="primary" onClick={() => setCaptureOpen(true)} className="px-4">
-                  Add contact
+                  {t.addContact}
                 </Button>
               ) : (
                 <>
                   <Button onClick={() => setEditOpen(true)} className="px-3.5 text-[14px]">
-                    Edit
+                    {t.edit}
                   </Button>
                   <Button variant="danger" onClick={() => void onDelete()} className="px-3.5 text-[14px]">
-                    {company.is_default ? 'Archive' : 'Delete'}
+                    {company.is_default ? t.archive : t.del}
                   </Button>
                 </>
               )}
@@ -143,12 +147,12 @@ export function CompanyPanel({
           <>
             {company.archived && (
               <p className="mb-4 rounded-lg bg-[var(--surface)] p-3 text-[13.5px] text-[var(--muted)]">
-                Archived.{' '}
+                {t.archivedNotice}{' '}
                 <button
                   onClick={() => void onUpdate(company.id, { archived: false })}
                   className="text-[var(--accent-ink)] underline underline-offset-2"
                 >
-                  Restore
+                  {t.restore}
                 </button>
               </p>
             )}
@@ -157,25 +161,25 @@ export function CompanyPanel({
               role="tablist"
               className="mb-4 flex gap-1 rounded-lg bg-[var(--surface)] p-1"
             >
-              {TABS.map((t) => (
+              {TABS.map((item) => (
                 <button
-                  key={t.key}
+                  key={item.key}
                   role="tab"
-                  aria-selected={tab === t.key}
-                  onClick={() => setTab(t.key)}
+                  aria-selected={tab === item.key}
+                  onClick={() => setTab(item.key)}
                   className={`
                     flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-md px-2
                     text-[13.5px] font-medium transition-colors duration-150
                     ${
-                      tab === t.key
+                      tab === item.key
                         ? 'bg-[var(--raised)] text-[var(--ink)] shadow-[0_1px_2px_rgb(22_25_26/0.08)]'
                         : 'text-[var(--muted)] hover:text-[var(--ink)]'
                     }
                   `}
                 >
-                  {t.label}
-                  {t.count !== undefined && t.count > 0 && (
-                    <span className="tnum text-[11px] text-[var(--faint)]">{t.count}</span>
+                  {item.label}
+                  {item.count !== undefined && item.count > 0 && (
+                    <span className="tnum text-[11px] text-[var(--faint)]">{item.count}</span>
                   )}
                 </button>
               ))}
@@ -199,7 +203,7 @@ export function CompanyPanel({
 
       {company && (
         <>
-          <Sheet open={editOpen} title="Edit company" onClose={() => setEditOpen(false)}>
+          <Sheet open={editOpen} title={t.editCompany} onClose={() => setEditOpen(false)}>
             <CompanyForm
               initial={company}
               onSubmit={async (patch) => {

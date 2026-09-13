@@ -1,17 +1,20 @@
 import { NavLink } from 'react-router-dom'
-
-const TABS = [
-  { to: '/', label: 'Playbook', end: true },
-  { to: '/map', label: 'Map', end: false },
-  { to: '/targets', label: 'Targets', end: false },
-  { to: '/contacts', label: 'Contacts', end: false },
-]
+import { useLocale } from '../../i18n/LocaleContext'
 
 /**
  * Floating pill rather than an edge-to-edge bar: it sits clear of the home
  * indicator, and the inset makes the whole control reachable with one thumb.
  */
 export function BottomTabs() {
+  const { t } = useLocale()
+
+  const TABS = [
+    { to: '/', label: t.navPlaybook, end: true },
+    { to: '/map', label: t.navMap, end: false },
+    { to: '/targets', label: t.navTargets, end: false },
+    { to: '/contacts', label: t.navContacts, end: false },
+  ]
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 px-3 lg:hidden"

@@ -1,5 +1,7 @@
-import { hallForBooths, hallName } from '../../lib/hall'
+import { hallForBooths } from '../../lib/hall'
 import type { Company } from '../../lib/types'
+import { useLocale } from '../../i18n/LocaleContext'
+import { localizeCompany, localHallName } from '../../i18n/company'
 
 interface Props {
   company: Company
@@ -10,6 +12,9 @@ interface Props {
 }
 
 export function CompanyRow({ company, visited, selected, onOpen, onToggleVisited }: Props) {
+  const { locale, t } = useLocale()
+  const c = localizeCompany(company, locale)
+
   return (
     <li
       className={`
@@ -25,7 +30,7 @@ export function CompanyRow({ company, visited, selected, onOpen, onToggleVisited
             type="checkbox"
             checked={visited}
             onChange={onToggleVisited}
-            aria-label={`Mark ${company.name} visited`}
+            aria-label={`Mark ${c.name} visited`}
             className="h-[18px] w-[18px] accent-[var(--accent)]"
           />
         </label>
@@ -47,18 +52,18 @@ export function CompanyRow({ company, visited, selected, onOpen, onToggleVisited
               {company.booths.join('  ')}
             </span>
             <span className="text-[11px] uppercase tracking-[0.08em] text-[var(--faint)]">
-              {hallName(hallForBooths(company.booths))}
+              {localHallName(hallForBooths(company.booths), t)}
             </span>
-            {company.company_type && (
+            {c.company_type && (
               <span className="rounded-full border border-[var(--line-strong)] px-1.5 py-px text-[11px] text-[var(--muted)]">
-                {company.company_type}
+                {c.company_type}
               </span>
             )}
           </span>
 
-          {company.ask && (
+          {c.ask && (
             <span className="mt-1.5 line-clamp-2 block text-[13px] leading-snug text-[var(--muted)]">
-              {company.ask}
+              {c.ask}
             </span>
           )}
         </button>

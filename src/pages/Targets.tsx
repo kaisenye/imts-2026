@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useCompanies } from '../hooks/useCompanies'
+import { useLocale } from '../i18n/LocaleContext'
+import { LocaleSwitch } from '../components/LocaleSwitch'
 import { useVisits } from '../hooks/useVisits'
 import { DEFAULT_FILTERS, activeFilterCount, filterCompanies, type Filters } from '../lib/filter'
-import { TIER_NAMES, TIER_ORDER, TIER_SUBS, type Tier } from '../lib/types'
+import { TIER_ORDER, type Tier } from '../lib/types'
+import { tierName, tierSub } from '../i18n/company'
 import { CompanyRow } from '../components/company/CompanyRow'
 import { CompanyPanel } from '../components/company/CompanyPanel'
 import { FilterSheet } from '../components/company/FilterSheet'
@@ -13,6 +16,7 @@ import { ErrorBanner } from '../components/ui/ErrorBanner'
 import { Empty } from '../components/ui/Empty'
 
 export default function Targets() {
+  const { t } = useLocale()
   const { companies, loading, error, reload, create, update, remove } = useCompanies()
   const { visited, toggle } = useVisits()
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
@@ -52,15 +56,18 @@ export default function Targets() {
       <header className="flex items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-ink)]">
-            Hit list
+            {t.targetsEyebrow}
           </p>
           <h1 className="font-display mt-0.5 text-[34px] leading-none tracking-[-0.02em]">
-            Targets
+            {t.targetsTitle}
           </h1>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="mb-1 min-h-10 px-3 text-[14px]">
-          Add
+        <div className="mb-1 flex items-center gap-2">
+          <LocaleSwitch className="lg:hidden" />
+        <Button onClick={() => setAddOpen(true)} className="min-h-10 px-3 text-[14px]">
+          {t.add}
         </Button>
+        </div>
       </header>
 
       {/* Progress reads at a glance: how much of the floor is actually done. */}
@@ -72,7 +79,7 @@ export default function Targets() {
           />
         </div>
         <span className="tnum shrink-0 text-[12px] text-[var(--muted)]">
-          {visitedCount}/{companies.length} visited
+          {visitedCount}/{companies.length} {t.visitedCount}
         </span>
       </div>
 
@@ -93,8 +100,8 @@ export default function Targets() {
               type="search"
               value={filters.q}
               onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-              placeholder="Company, booth, keyword"
-              aria-label="Search targets"
+              placeholder={t.searchPlaceholder}
+              aria-label={t.searchLabel}
               className="
                 min-h-11 w-full rounded-lg border border-[var(--line-strong)] bg-[var(--raised)]
                 pl-9 pr-3 text-base transition-colors duration-150
@@ -108,18 +115,18 @@ export default function Targets() {
               filterCount ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-ink)]' : ''
             }`}
           >
-            Filters{filterCount ? ` · ${filterCount}` : ''}
+            {t.filters}{filterCount ? ` · ${filterCount}` : ''}
           </Button>
         </div>
 
         <div className="mt-2 flex items-center gap-3 text-[12.5px] text-[var(--muted)]">
-          <span className="tnum">{visible.length} shown</span>
+          <span className="tnum">{visible.length} {t.shown}</span>
           {filtersDirty && (
             <button
               onClick={() => setFilters(DEFAULT_FILTERS)}
               className="text-[var(--accent-ink)] underline underline-offset-2"
             >
-              Clear
+              {t.clear}
             </button>
           )}
         </div>
@@ -130,17 +137,17 @@ export default function Targets() {
           <ErrorBanner message={error} onRetry={reload} />
         </div>
       )}
-      {loading && <Empty>Loading targets…</Empty>}
+      {loading && <Empty>{t.loadingTargets}</Empty>}
       {!loading && !error && visible.length === 0 && (
-        <Empty>Nothing matches those filters.</Empty>
+        <Empty>{t.noMatches}</Empty>
       )}
 
       {Array.from(grouped.entries()).map(([tier, rows]) => (
         <section key={tier} className="mt-7">
           <div className="flex items-baseline gap-2 border-b-2 border-[var(--ink)] pb-1.5">
-            <h2 className="font-display text-[19px] leading-tight">{TIER_NAMES[tier]}</h2>
+            <h2 className="font-display text-[19px] leading-tight">{tierName(tier, t)}</h2>
             <span className="hidden text-[12px] text-[var(--muted)] sm:inline">
-              {TIER_SUBS[tier]}
+              {tierSub(tier, t)}
             </span>
             <span className="tnum ml-auto text-[12px] text-[var(--faint)]">{rows.length}</span>
           </div>
@@ -175,7 +182,7 @@ export default function Targets() {
         onChange={setFilters}
         onClose={() => setFiltersOpen(false)}
       />
-      <Sheet open={addOpen} title="Add company" onClose={() => setAddOpen(false)}>
+      <Sheet open={addOpen} title={t.addCompany} onClose={() => setAddOpen(false)}>
         <CompanyForm
           onSubmit={async (input) => {
             await create(input)

@@ -1,19 +1,24 @@
 import { NavLink } from 'react-router-dom'
-
-const LINKS = [
-  { to: '/', label: 'Playbook', end: true },
-  { to: '/map', label: 'Map', end: false },
-  { to: '/targets', label: 'Targets', end: false },
-  { to: '/contacts', label: 'Contacts', end: false },
-]
+import { useLocale } from '../../i18n/LocaleContext'
+import { LocaleSwitch } from '../LocaleSwitch'
 
 export function Sidebar() {
+  const { t } = useLocale()
+
+  const LINKS = [
+    { to: '/', label: t.navPlaybook, end: true },
+    { to: '/map', label: t.navMap, end: false },
+    { to: '/targets', label: t.navTargets, end: false },
+    { to: '/contacts', label: t.navContacts, end: false },
+  ]
+
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-[var(--line)] bg-[var(--surface)] p-6 lg:block">
       <div className="font-display text-[16px]">HIPPSC</div>
-      <div className="mb-7 text-[12px] uppercase tracking-[0.1em] text-[var(--faint)]">
-        IMTS 2026
+      <div className="mb-5 text-[12px] uppercase tracking-[0.1em] text-[var(--faint)]">
+        {t.brandSub}
       </div>
+      <LocaleSwitch className="mb-6" />
       <nav className="flex flex-col gap-0.5">
         {LINKS.map((link) => (
           <NavLink
@@ -33,7 +38,7 @@ export function Sidebar() {
         ))}
       </nav>
       <p className="mt-8 border-t border-[var(--line)] pt-4 text-[11.5px] leading-relaxed text-[var(--faint)]">
-        McCormick Place · Sept 14–19
+        {t.venue}
       </p>
     </aside>
   )

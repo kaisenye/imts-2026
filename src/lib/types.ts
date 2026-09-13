@@ -41,6 +41,14 @@ export interface Company {
   asks: string[] | null
   watch_out: string | null
   website: string | null
+  name_zh: string | null
+  company_type_zh: string | null
+  ask_zh: string | null
+  bio_zh: string | null
+  fit_zh: string | null
+  opening_line_zh: string | null
+  asks_zh: string[] | null
+  watch_out_zh: string | null
   is_default: boolean
   archived: boolean
   created_at: string
