@@ -36,7 +36,7 @@ The rep works the floor on a phone for six days. They need the playbook plus a r
 
 Shared passcode. `VITE_APP_PASSCODE` compared client-side; on success set `localStorage.hippsc_auth`. A `<PasscodeGate>` wraps the router.
 
-Supabase uses the anon key with RLS enabled and permissive policies (`true` for select/insert/update/delete on all four tables, and on the `cards` storage bucket). This is explicitly not security — it keeps casual visitors out of a private tool. If the URL leaks, the data is readable. Accepted.
+Supabase uses the publishable key (sb_publishable_…, the anon role) with RLS enabled and permissive policies (`true` for select/insert/update/delete on all four tables, and on the `cards` storage bucket). This is explicitly not security — it keeps casual visitors out of a private tool. If the URL leaks, the data is readable. Accepted.
 
 ## Data model
 
@@ -199,9 +199,9 @@ Each hook owns one table. Components take data as props and stay presentational 
 
 1. Supabase project → run `schema.sql` then `seed.sql`.
 2. Vercel project from the repo.
-3. Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APP_PASSCODE` (build-time), `OPENAI_API_KEY` (server-only).
+3. Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_APP_PASSCODE` (build-time), `OPENAI_API_KEY` (server-only).
 
 ## Open risks
 
-- The passcode is client-side and the anon key is in the bundle. Anyone with the URL and passcode has full write access. Acceptable for a private single-user tool; not acceptable if this is ever shared publicly.
+- The passcode is client-side and the publishable key is in the bundle. Anyone with the URL and passcode has full write access. Acceptable for a private single-user tool; not acceptable if this is ever shared publicly.
 - Pin positions in the original are derived from booth numbering, not surveyed. Carried over as-is with the same "confirm on the official floor plan" caveat.

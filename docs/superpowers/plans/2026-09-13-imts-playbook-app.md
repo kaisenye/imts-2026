@@ -176,11 +176,16 @@ export default defineConfig({
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noEmit": true
+    "emitDeclarationOnly": true,
+    "outDir": "./node_modules/.tmp/tsconfig-node"
   },
   "include": ["vite.config.ts", "vitest.config.ts"]
 }
 ```
+
+A referenced project cannot set `noEmit` (TypeScript errors with TS6310), so
+this one emits declarations only, into a throwaway directory. Without the
+`outDir`, `tsc -b` drops `vite.config.js` and friends in the repo root.
 
 `index.html`:
 ```html
@@ -207,7 +212,7 @@ export default defineConfig({
 `.env.example`:
 ```
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_APP_PASSCODE=
 OPENAI_API_KEY=
 ```
@@ -526,13 +531,13 @@ export interface OcrResult {
 import { createClient } from '@supabase/supabase-js'
 
 const url = import.meta.env.VITE_SUPABASE_URL
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-if (!url || !anonKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY')
+if (!url || !publishableKey) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY')
 }
 
-export const supabase = createClient(url, anonKey)
+export const supabase = createClient(url, publishableKey)
 
 export const CARDS_BUCKET = 'cards'
 ```
@@ -3526,9 +3531,14 @@ visit tracking, notes, and business-card capture with OCR.
 
 2. **Environment** — copy `.env.example` to `.env` and fill in:
    - `VITE_SUPABASE_URL` — project URL
-   - `VITE_SUPABASE_ANON_KEY` — publishable anon key
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` — publishable key (`sb_publishable_…`),
+     from Settings → API Keys → "Publishable and secret API keys"
    - `VITE_APP_PASSCODE` — the passcode that unlocks the app
    - `OPENAI_API_KEY` — for card OCR (server-side only)
+
+   The **secret key** (`sb_secret_…`) is deliberately unused: nothing in this
+   app needs to bypass RLS. Never put it in a `VITE_*` variable — that would
+   ship full database access to every browser.
 
 3. **Local** — `npm install && npm run dev`
 
@@ -3546,7 +3556,7 @@ re-running it in Supabase never overwrites edits made in the app.
 
 ## Security note
 
-The passcode is checked client-side and the Supabase anon key ships in the
+The passcode is checked client-side and the Supabase publishable key ships in the
 bundle with permissive RLS policies. Anyone with the URL and the passcode has
 full read/write access. This is a private single-user tool; do not share the
 link publicly or put anything sensitive in it.
