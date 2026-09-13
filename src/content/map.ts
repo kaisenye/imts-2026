@@ -18,27 +18,80 @@ export const HALL_RECTS: Record<Hall, HallRect> = {
   E: { x: 600, y: 70, w: 160, h: 420, label: 'East · L3', sub: 'Software · QA · 9–17' },
 }
 
-// Booth numbers encode aisle and position. Spread pins across each hall rect by
-// those digits so relative placement is meaningful; exact position is not surveyed.
-export function pinPosition(booth: string, hall: Hall, index: number, total: number): { x: number; y: number } {
-  const rect = HALL_RECTS[hall]
-  const digits = booth.replace(/\D/g, '')
-  const aisle = Number(digits.slice(1, 3) || '0')
-  const spot = Number(digits.slice(3) || '0')
+// Booth numbers encode aisle and position, so a booth's digits give a meaningful
+// *relative* spot inside its hall — never a surveyed one. Pins are laid out per
+// hall rather than one at a time: a purely per-pin formula puts booths that share
+// an aisle prefix on top of each other (the real target list produced 119
+// overlapping pairs, some 2px apart), which makes them impossible to tap.
+const MIN_GAP = 16
+const EDGE = 10
 
+export interface PlacedPin {
+  id: string
+  x: number
+  y: number
+}
+
+interface PinInput {
+  id: string
+  booth: string
+}
+
+export function layoutPins(pins: PinInput[], hall: Hall): PlacedPin[] {
+  const rect = HALL_RECTS[hall]
   const padX = 34
   const padY = 46
   const usableW = rect.w - padX * 2
   const usableH = rect.h - padY * 2
 
-  // Aisle drives the horizontal band, spot drives depth; index breaks ties so
-  // two booths in the same aisle never render exactly on top of each other.
-  const xRatio = (aisle % 20) / 20
-  const yRatio = (spot % 1000) / 1000
-  const jitter = total > 1 ? ((index % 5) - 2) * 4 : 0
+  // Seed each pin from its booth digits, then relax collisions.
+  const placed: PlacedPin[] = pins.map(({ id, booth }) => {
+    const digits = booth.replace(/\D/g, '')
+    const aisle = Number(digits.slice(1, 3) || '0')
+    const spot = Number(digits.slice(3) || '0')
+    return {
+      id,
+      x: rect.x + padX + ((aisle % 20) / 20) * usableW,
+      y: rect.y + padY + ((spot % 1000) / 1000) * usableH,
+    }
+  })
 
-  return {
-    x: rect.x + padX + xRatio * usableW + jitter,
-    y: rect.y + padY + yRatio * usableH,
+  // Push overlapping pins apart. A few passes is plenty at this scale and keeps
+  // pins near their booth-derived position instead of scattering them.
+  for (let pass = 0; pass < 240; pass++) {
+    let moved = false
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const a = placed[i]
+        const b = placed[j]
+        let dx = b.x - a.x
+        let dy = b.y - a.y
+        let dist = Math.hypot(dx, dy)
+        if (dist >= MIN_GAP) continue
+        if (dist === 0) {
+          // Identical seeds: nudge deterministically so the result is stable.
+          dx = ((i % 2) * 2 - 1) * 0.5
+          dy = ((j % 2) * 2 - 1) * 0.5
+          dist = Math.hypot(dx, dy)
+        }
+        const push = (MIN_GAP - dist) / 2
+        const ux = (dx / dist) * push
+        const uy = (dy / dist) * push
+        a.x -= ux
+        a.y -= uy
+        b.x += ux
+        b.y += uy
+        moved = true
+      }
+    }
+    // Clamp inside the loop: clamping only at the end pushes pins back onto each
+    // other at the edges, undoing the separation we just computed.
+    for (const pin of placed) {
+      pin.x = Math.min(rect.x + rect.w - EDGE, Math.max(rect.x + EDGE, pin.x))
+      pin.y = Math.min(rect.y + rect.h - EDGE, Math.max(rect.y + padY, pin.y))
+    }
+    if (!moved) break
   }
+
+  return placed
 }

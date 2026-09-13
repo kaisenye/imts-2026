@@ -14,6 +14,6 @@
 - [x] 12 Company detail + notes
 - [x] 13 Card capture + OCR fn
 - [x] 14 Contacts page
-- [ ] 15 Floor map
+- [x] 15 Floor map
 - [ ] 16 Playbook content
 - [ ] 17 Deploy setup + verification

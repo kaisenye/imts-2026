@@ -1,6 +1,6 @@
 import { hallForBooths, type Hall } from '../../lib/hall'
 import type { Company } from '../../lib/types'
-import { HALL_RECTS, VIEWBOX, pinPosition } from '../../content/map'
+import { HALL_RECTS, VIEWBOX, layoutPins } from '../../content/map'
 
 interface Props {
   companies: Company[]
@@ -19,13 +19,29 @@ export function FloorMap({
   onSelect,
   onSelectHall,
 }: Props) {
-  const placed = companies
-    .map((company) => {
-      const hall = hallForBooths(company.booths)
-      if (!hall) return null
-      return { company, hall, booth: company.booths[0] }
-    })
-    .filter((entry): entry is { company: Company; hall: Hall; booth: string } => entry !== null)
+  const byHall = new Map<Hall, { company: Company; booth: string }[]>()
+  for (const company of companies) {
+    const hall = hallForBooths(company.booths)
+    if (!hall) continue
+    const bucket = byHall.get(hall) ?? []
+    bucket.push({ company, booth: company.booths[0] })
+    byHall.set(hall, bucket)
+  }
+
+  // Lay each hall out as a group so pins sharing an aisle prefix separate
+  // instead of stacking on the same coordinates.
+  const placed = Array.from(byHall.entries()).flatMap(([hall, entries]) => {
+    const positions = layoutPins(
+      entries.map(({ company, booth }) => ({ id: company.id, booth })),
+      hall,
+    )
+    return entries.map((entry, i) => ({
+      company: entry.company,
+      hall,
+      x: positions[i].x,
+      y: positions[i].y,
+    }))
+  })
 
   return (
     <svg
@@ -58,8 +74,8 @@ export function FloorMap({
         )
       })}
 
-      {placed.map((entry, index) => {
-        const { x, y } = pinPosition(entry.booth, entry.hall, index, placed.length)
+      {placed.map((entry) => {
+        const { x, y } = entry
         const isVisited = !!visited[entry.company.id]
         const isSelected = selectedId === entry.company.id
         const dimmed = hallFilter !== null && hallFilter !== entry.hall
