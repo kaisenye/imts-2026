@@ -44,10 +44,10 @@ export function Panel({ open, title, subtitle, onClose, children, footer }: Prop
 
       <div
         className="
-          animate-sheet lg-slide-x absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col
+          animate-sheet lg-slide-x absolute inset-x-0 bottom-0 flex h-[95vh] flex-col
           rounded-t-2xl border-t border-[var(--line-strong)] bg-[var(--raised)]
           shadow-[var(--shadow-sheet)]
-          lg:inset-y-0 lg:right-0 lg:left-auto lg:max-h-none lg:w-[520px]
+          lg:inset-y-0 lg:right-0 lg:left-auto lg:h-auto lg:w-[520px]
           lg:rounded-none lg:border-t-0 lg:border-l
         "
       >
