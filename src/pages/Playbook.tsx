@@ -7,6 +7,13 @@ import Days from '../content/days'
 import Scripts from '../content/scripts'
 import Plays from '../content/plays'
 import Followup from '../content/followup'
+import ThesisZh from '../content/thesis.zh'
+import NumbersZh from '../content/numbers.zh'
+import RulesZh from '../content/rules.zh'
+import DaysZh from '../content/days.zh'
+import ScriptsZh from '../content/scripts.zh'
+import PlaysZh from '../content/plays.zh'
+import FollowupZh from '../content/followup.zh'
 
 function Section({ title, body, openByDefault }: { title: string; body: ReactNode; openByDefault?: boolean }) {
   const [open, setOpen] = useState(!!openByDefault)
@@ -46,16 +53,17 @@ function Section({ title, body, openByDefault }: { title: string; body: ReactNod
 }
 
 export default function Playbook() {
-  const { t } = useLocale()
+  const { locale, t } = useLocale()
+  const zh = locale === 'zh'
 
   const SECTIONS: { id: string; title: string; body: ReactNode; openByDefault?: boolean }[] = [
-    { id: 'thesis', title: t.secThesis, body: <Thesis />, openByDefault: true },
-    { id: 'numbers', title: t.secNumbers, body: <Numbers /> },
-    { id: 'rules', title: t.secRules, body: <Rules /> },
-    { id: 'days', title: t.secDays, body: <Days /> },
-    { id: 'scripts', title: t.secScripts, body: <Scripts /> },
-    { id: 'plays', title: t.secPlays, body: <Plays /> },
-    { id: 'followup', title: t.secFollowup, body: <Followup /> },
+    { id: 'thesis', title: t.secThesis, body: zh ? <ThesisZh /> : <Thesis />, openByDefault: true },
+    { id: 'numbers', title: t.secNumbers, body: zh ? <NumbersZh /> : <Numbers /> },
+    { id: 'rules', title: t.secRules, body: zh ? <RulesZh /> : <Rules /> },
+    { id: 'days', title: t.secDays, body: zh ? <DaysZh /> : <Days /> },
+    { id: 'scripts', title: t.secScripts, body: zh ? <ScriptsZh /> : <Scripts /> },
+    { id: 'plays', title: t.secPlays, body: zh ? <PlaysZh /> : <Plays /> },
+    { id: 'followup', title: t.secFollowup, body: zh ? <FollowupZh /> : <Followup /> },
   ]
 
   return (
