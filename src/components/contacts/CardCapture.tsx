@@ -127,25 +127,6 @@ export function CardCapture({ open, companyId, companies, defaultCompanyName, on
         className="hidden"
       />
 
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt="Business card"
-          className="mb-4 w-full rounded-lg border border-[var(--line)]"
-        />
-      ) : (
-        <Button
-          variant="primary"
-          onClick={() => fileInput.current?.click()}
-          disabled={busy}
-          className="mb-4 w-full"
-        >
-          {t.photographCard}
-        </Button>
-      )}
-
-      {status && <p className="mb-3 text-[14px] text-[var(--muted)]">{status}</p>}
-
       <ContactForm
         draft={draft}
         onChange={setDraft}
@@ -153,6 +134,23 @@ export function CardCapture({ open, companyId, companies, defaultCompanyName, on
         onCancel={close}
         busy={busy}
         companies={companies}
+        header={
+          <>
+            {imageUrl ? (
+              <img src={imageUrl} alt="Business card" className="w-full rounded-lg border border-[var(--line)]" />
+            ) : (
+              <Button
+                variant="primary"
+                onClick={() => fileInput.current?.click()}
+                disabled={busy}
+                className="w-full"
+              >
+                {t.photographCard}
+              </Button>
+            )}
+            {status && <p className="-mt-1 text-[14px] text-[var(--muted)]">{status}</p>}
+          </>
+        }
       />
     </Sheet>
   )

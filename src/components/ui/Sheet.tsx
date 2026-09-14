@@ -7,7 +7,14 @@ interface Props {
   children: ReactNode
 }
 
-/** Modal for forms and filters: bottom sheet on phone, centred card at lg. */
+/**
+ * Modal for forms and filters: bottom sheet on phone, centred card at lg.
+ *
+ * The sheet itself does not scroll. Children lay out as a column and put
+ * their scrolling content in `SheetBody` and their button row in
+ * `SheetActions`, so Cancel / Save stay pinned at the bottom instead of
+ * scrolling away under a long form.
+ */
 export function Sheet({ open, title, onClose, children }: Props) {
   useEffect(() => {
     if (!open) return
@@ -41,16 +48,16 @@ export function Sheet({ open, title, onClose, children }: Props) {
       />
       <div
         className="
-          animate-sheet relative max-h-[90vh] w-full overflow-y-auto overscroll-contain
+          animate-sheet relative flex max-h-[90vh] w-full flex-col
           rounded-t-2xl border-t border-[var(--line-strong)] bg-[var(--raised)]
           shadow-[var(--shadow-sheet)]
           lg:max-w-lg lg:rounded-2xl lg:border
         "
       >
-        <div className="flex justify-center pt-2 lg:hidden">
+        <div className="flex shrink-0 justify-center pt-2 lg:hidden">
           <span className="h-1 w-9 rounded-full bg-[var(--line-strong)]" />
         </div>
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--raised)] px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-5 py-3">
           <h2 className="font-display text-[17px]">{title}</h2>
           <button
             onClick={onClose}
@@ -65,8 +72,26 @@ export function Sheet({ open, title, onClose, children }: Props) {
             </svg>
           </button>
         </div>
-        <div className="footer-pad px-5 pt-4">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>
+    </div>
+  )
+}
+
+/** The scrolling part of a sheet. */
+export function SheetBody({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-4 ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+/** The button row, pinned beneath the scrolling body. */
+export function SheetActions({ children }: { children: ReactNode }) {
+  return (
+    <div className="footer-pad flex shrink-0 gap-3 border-t border-[var(--line)] bg-[var(--raised)] px-5 pt-3">
+      {children}
     </div>
   )
 }

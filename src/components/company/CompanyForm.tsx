@@ -3,6 +3,7 @@ import type { Company, Tier } from '../../lib/types'
 import { TIER_ORDER } from '../../lib/types'
 import { Field, TextArea } from '../ui/Field'
 import { Button } from '../ui/Button'
+import { SheetActions, SheetBody } from '../ui/Sheet'
 import { useLocale } from '../../i18n/LocaleContext'
 import { tierLabel } from '../../i18n/company'
 
@@ -12,6 +13,7 @@ interface Props {
   onCancel: () => void
 }
 
+/** Rendered inside a Sheet: fields scroll, the button row stays put. */
 export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
   const { t } = useLocale()
   const [name, setName] = useState(initial?.name ?? '')
@@ -53,51 +55,55 @@ export function CompanyForm({ initial, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
-      <Field label={t.fieldCompanyName} value={name} onChange={(e) => setName(e.target.value)} required />
-      <label className="block">
-        <span className="mb-1 block text-[13px] text-[var(--muted)]">{t.fieldTier}</span>
-        <select
-          value={tier}
-          onChange={(e) => setTier(e.target.value as Tier)}
-          className="min-h-11 w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 text-base"
-        >
-          {TIER_ORDER.map((tierOpt) => (
-            <option key={tierOpt} value={tierOpt}>
-              {tierLabel(tierOpt, t)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <Field
-        label={t.fieldBooths}
-        value={booths}
-        onChange={(e) => setBooths(e.target.value)}
-        placeholder="338536, 432212"
-        inputMode="numeric"
-      />
-      <Field label={t.fieldType} value={companyType} onChange={(e) => setCompanyType(e.target.value)} placeholder="Importer" />
-      <Field label={t.fieldHq} value={hq} onChange={(e) => setHq(e.target.value)} placeholder="Schaumburg, IL" />
-      <Field
-        label={t.fieldWebsite}
-        type="url"
-        inputMode="url"
-        autoCapitalize="none"
-        autoCorrect="off"
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
-        placeholder="yamazen.com"
-      />
-      <TextArea label={t.fieldAsk} value={ask} onChange={(e) => setAsk(e.target.value)} rows={3} />
-      {error && <p className="text-[14px] text-[#b3372e]">{error}</p>}
-      <div className="flex gap-3">
+    <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+      <SheetBody className="flex flex-col gap-4">
+        <Field label={t.fieldCompanyName} value={name} onChange={(e) => setName(e.target.value)} required />
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.07em] text-[var(--muted)]">
+            {t.fieldTier}
+          </span>
+          <select
+            value={tier}
+            onChange={(e) => setTier(e.target.value as Tier)}
+            className="min-h-11 w-full rounded-lg border border-[var(--line-strong)] bg-[var(--raised)] px-3 text-base text-[var(--ink)] transition-colors duration-150 hover:border-[var(--muted)]"
+          >
+            {TIER_ORDER.map((tierOpt) => (
+              <option key={tierOpt} value={tierOpt}>
+                {tierLabel(tierOpt, t)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Field
+          label={t.fieldBooths}
+          value={booths}
+          onChange={(e) => setBooths(e.target.value)}
+          placeholder="338536, 432212"
+          inputMode="numeric"
+        />
+        <Field label={t.fieldType} value={companyType} onChange={(e) => setCompanyType(e.target.value)} placeholder="Importer" />
+        <Field label={t.fieldHq} value={hq} onChange={(e) => setHq(e.target.value)} placeholder="Schaumburg, IL" />
+        <Field
+          label={t.fieldWebsite}
+          type="url"
+          inputMode="url"
+          autoCapitalize="none"
+          autoCorrect="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          placeholder="yamazen.com"
+        />
+        <TextArea label={t.fieldAsk} value={ask} onChange={(e) => setAsk(e.target.value)} rows={3} />
+        {error && <p className="text-[14px] text-[var(--flag)]">{error}</p>}
+      </SheetBody>
+      <SheetActions>
         <Button type="button" onClick={onCancel} className="flex-1">
           {t.cancel}
         </Button>
         <Button type="submit" variant="primary" disabled={saving} className="flex-1">
           {saving ? t.saving : t.save}
         </Button>
-      </div>
+      </SheetActions>
     </form>
   )
 }
