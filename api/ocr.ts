@@ -7,8 +7,6 @@ Cards often carry two phone numbers (office and mobile) or two email addresses: 
 first in email/phone and the second in email2/phone2.
 Use null for any field not present on the card. Do not guess or invent values.`
 
-import { adapt } from './_adapt'
-
 // Vision on a 1600px card can run past the default function timeout.
 export const config = { maxDuration: 30 }
 
@@ -81,5 +79,59 @@ async function ocr(request: Request): Promise<Response> {
     return Response.json({ error: 'Could not read the card' }, { status: 502 })
   }
 }
+
+// --- Vercel adapter ---------------------------------------------------------
+// Vercel's Node runtime invokes functions as (req, res) and ignores a returned
+// Response; without this every call hung until the platform timeout. Kept
+// inline rather than imported: a sibling module in api/ is deployed as its own
+// endpoint, and an extension-less ESM import is one more thing to fail at load.
+// Any throw is reported as JSON so a failure is diagnosable from the client.
+import type { IncomingMessage, ServerResponse } from 'node:http'
+
+type NodeRequest = IncomingMessage & { body?: unknown }
+
+async function nodeBody(req: NodeRequest): Promise<BodyInit | undefined> {
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === 'string') return req.body
+    if (Buffer.isBuffer(req.body)) return new Uint8Array(req.body)
+    return JSON.stringify(req.body)
+  }
+  const chunks: Buffer[] = []
+  for await (const chunk of req) chunks.push(chunk as Buffer)
+  return chunks.length ? new Uint8Array(Buffer.concat(chunks)) : undefined
+}
+
+function toRequest(req: NodeRequest, body: BodyInit | undefined): Request {
+  const headers = new Headers()
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) continue
+    headers.set(key, Array.isArray(value) ? value.join(', ') : value)
+  }
+  const method = req.method ?? 'GET'
+  return new Request(`https://${req.headers.host ?? 'localhost'}${req.url ?? '/'}`, {
+    method,
+    headers,
+    body: method === 'GET' || method === 'HEAD' ? undefined : body,
+  })
+}
+
+function adapt(handler: (request: Request) => Promise<Response>) {
+  return async function serve(req: Request | NodeRequest, res?: ServerResponse): Promise<Response | void> {
+    if (!res || typeof (req as Request).text === 'function') return handler(req as Request)
+    const node = req as NodeRequest
+    try {
+      const response = await handler(toRequest(node, await nodeBody(node)))
+      res.statusCode = response.status
+      response.headers.forEach((value, key) => res.setHeader(key, value))
+      res.end(Buffer.from(await response.arrayBuffer()))
+    } catch (error) {
+      const err = error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) }
+      res.statusCode = 500
+      res.setHeader('content-type', 'application/json')
+      res.end(JSON.stringify({ error: 'adapter', ...err }))
+    }
+  }
+}
+// ---------------------------------------------------------------------------
 
 export default adapt(ocr)
