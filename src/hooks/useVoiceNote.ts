@@ -14,6 +14,20 @@ export type VoiceState = 'idle' | 'connecting' | 'listening' | 'error'
 
 const SAMPLE_RATE = 24000
 
+// gpt-live-transcribe does not support server-side turn detection, so the
+// client decides where a phrase ends and commits the buffer itself. Without a
+// commit the API never emits a completed transcript and nothing reaches the
+// note box.
+const SILENCE_RMS = 0.012
+const SILENCE_MS = 800
+const MIN_PHRASE_MS = 400
+
+function rms(input: Float32Array): number {
+  let sum = 0
+  for (let i = 0; i < input.length; i++) sum += input[i] * input[i]
+  return Math.sqrt(sum / input.length)
+}
+
 function floatToPcm16Base64(input: Float32Array): string {
   const buffer = new ArrayBuffer(input.length * 2)
   const view = new DataView(buffer)
@@ -41,18 +55,39 @@ export function useVoiceNote({ onText }: Options) {
   const stream = useRef<MediaStream | null>(null)
   const audioCtx = useRef<AudioContext | null>(null)
   const node = useRef<ScriptProcessorNode | null>(null)
+  // Audio buffered since the last commit, and how long we have heard silence.
+  const spokenMs = useRef(0)
+  const quietMs = useRef(0)
 
   const stop = useCallback(() => {
+    const ws = socket.current
+    const pending = ws?.readyState === WebSocket.OPEN && spokenMs.current >= MIN_PHRASE_MS
+
+    // Release the mic straight away — the recording indicator must stop the
+    // instant the button is tapped.
     node.current?.disconnect()
     node.current = null
     void audioCtx.current?.close().catch(() => {})
     audioCtx.current = null
     stream.current?.getTracks().forEach((t) => t.stop())
     stream.current = null
-    socket.current?.close()
-    socket.current = null
+
+    spokenMs.current = 0
+    quietMs.current = 0
     setPartial('')
     setState('idle')
+
+    if (pending && ws) {
+      // Flush the half-finished phrase and give the socket a moment to deliver
+      // the transcript. Closing immediately drops the last thing the rep said.
+      ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
+      socket.current = null
+      setTimeout(() => ws.close(), 2500)
+      return
+    }
+
+    ws?.close()
+    socket.current = null
   }, [])
 
   const start = useCallback(async () => {
@@ -90,8 +125,29 @@ export function useVoiceNote({ onText }: Options) {
 
         processor.onaudioprocess = (event) => {
           if (ws.readyState !== WebSocket.OPEN) return
-          const pcm = floatToPcm16Base64(event.inputBuffer.getChannelData(0))
-          ws.send(JSON.stringify({ type: 'input_audio_buffer.append', audio: pcm }))
+          const samples = event.inputBuffer.getChannelData(0)
+          const frameMs = (samples.length / SAMPLE_RATE) * 1000
+
+          ws.send(
+            JSON.stringify({
+              type: 'input_audio_buffer.append',
+              audio: floatToPcm16Base64(samples),
+            }),
+          )
+
+          // Commit on a pause so text lands while the rep is still talking,
+          // rather than all at once when they finally stop.
+          if (rms(samples) < SILENCE_RMS) {
+            quietMs.current += frameMs
+            if (quietMs.current >= SILENCE_MS && spokenMs.current >= MIN_PHRASE_MS) {
+              ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
+              spokenMs.current = 0
+              quietMs.current = 0
+            }
+          } else {
+            quietMs.current = 0
+            spokenMs.current += frameMs
+          }
         }
 
         source.connect(processor)
