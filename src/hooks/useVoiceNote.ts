@@ -72,10 +72,13 @@ export function useVoiceNote({ onText }: Options) {
       })
       stream.current = media
 
-      const ws = new WebSocket(
-        `wss://api.openai.com/v1/realtime?intent=transcription`,
-        ['realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1'],
-      )
+      // GA realtime: the ephemeral secret rides the openai-insecure-api-key
+      // subprotocol. Sending openai-beta.realtime-v1 routes to the retired beta
+      // endpoint, which now refuses the connection.
+      const ws = new WebSocket('wss://api.openai.com/v1/realtime', [
+        'realtime',
+        `openai-insecure-api-key.${token}`,
+      ])
       socket.current = ws
 
       ws.onopen = () => {
