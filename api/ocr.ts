@@ -7,9 +7,12 @@ Cards often carry two phone numbers (office and mobile) or two email addresses: 
 first in email/phone and the second in email2/phone2.
 Use null for any field not present on the card. Do not guess or invent values.`
 
-export const config = { runtime: 'nodejs' }
+import { adapt } from './_adapt'
 
-export default async function handler(request: Request): Promise<Response> {
+// Vision on a 1600px card can run past the default function timeout.
+export const config = { maxDuration: 30 }
+
+async function ocr(request: Request): Promise<Response> {
   if (request.method !== 'POST') {
     return Response.json({ error: 'Method not allowed' }, { status: 405 })
   }
@@ -78,3 +81,5 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ error: 'Could not read the card' }, { status: 502 })
   }
 }
+
+export default adapt(ocr)

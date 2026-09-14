@@ -3,7 +3,7 @@
 // OPENAI_API_KEY — so the key stays here and the browser gets a token that
 // expires in a minute.
 
-export const config = { runtime: 'nodejs' }
+import { adapt } from './_adapt'
 
 // gpt-live-transcribe rejects turn_detection entirely — even set to null — and
 // segments speech itself, emitting one completed transcript per phrase.
@@ -25,7 +25,7 @@ const SESSION = {
   },
 }
 
-export default async function handler(request: Request): Promise<Response> {
+async function realtimeToken(request: Request): Promise<Response> {
   if (request.method !== 'POST') {
     return Response.json({ error: 'Method not allowed' }, { status: 405 })
   }
@@ -62,3 +62,5 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ error: 'Could not start voice input' }, { status: 502 })
   }
 }
+
+export default adapt(realtimeToken)
