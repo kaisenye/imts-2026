@@ -7,7 +7,9 @@ export interface ContactDraft {
   /** Target this contact belongs to; what puts it in that company's panel. */
   company_id: string | null
   email: string
+  email2: string
   phone: string
+  phone2: string
   notes: string
 }
 
@@ -17,7 +19,9 @@ export const EMPTY_DRAFT: ContactDraft = {
   company_name: '',
   company_id: null,
   email: '',
+  email2: '',
   phone: '',
+  phone2: '',
   notes: '',
 }
 
@@ -34,7 +38,9 @@ export function mergeOcr(draft: ContactDraft, ocr: OcrResult): ContactDraft {
     title: pick(draft.title, ocr.title),
     company_name: pick(draft.company_name, ocr.company),
     email: pick(draft.email, ocr.email),
+    email2: pick(draft.email2, ocr.email2),
     phone: pick(draft.phone, ocr.phone),
+    phone2: pick(draft.phone2, ocr.phone2),
     notes: draft.notes,
     company_id: draft.company_id,
   }

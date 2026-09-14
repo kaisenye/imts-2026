@@ -42,16 +42,16 @@ export function ContactList({
                   {[contact.title, contact.company_name].filter(Boolean).join(' · ')}
                 </div>
               )}
-              {contact.email && (
-                <a href={`mailto:${contact.email}`} className="block text-[14px] text-[var(--accent-ink)]">
-                  {contact.email}
+              {[contact.email, contact.email2].filter(Boolean).map((email) => (
+                <a key={email} href={`mailto:${email}`} className="block text-[14px] text-[var(--accent-ink)]">
+                  {email}
                 </a>
-              )}
-              {contact.phone && (
-                <a href={`tel:${contact.phone}`} className="block text-[14px] text-[var(--accent-ink)]">
-                  {contact.phone}
+              ))}
+              {[contact.phone, contact.phone2].filter(Boolean).map((phone) => (
+                <a key={phone} href={`tel:${phone}`} className="block text-[14px] text-[var(--accent-ink)]">
+                  {phone}
                 </a>
-              )}
+              ))}
               {contact.notes && <p className="mt-1 text-[14px]">{contact.notes}</p>}
             </div>
             <button

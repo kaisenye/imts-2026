@@ -2,7 +2,9 @@
 // Requires OPENAI_API_KEY. Never called with the key client-side.
 
 const PROMPT = `Extract contact details from this business card image.
-Return ONLY a JSON object with these exact keys: name, title, company, email, phone.
+Return ONLY a JSON object with these exact keys: name, title, company, email, email2, phone, phone2.
+Cards often carry two phone numbers (office and mobile) or two email addresses: put the
+first in email/phone and the second in email2/phone2.
 Use null for any field not present on the card. Do not guess or invent values.`
 
 export const config = { runtime: 'nodejs' }
@@ -67,7 +69,9 @@ export default async function handler(request: Request): Promise<Response> {
       title: parsed.title ?? null,
       company: parsed.company ?? null,
       email: parsed.email ?? null,
+      email2: parsed.email2 ?? null,
       phone: parsed.phone ?? null,
+      phone2: parsed.phone2 ?? null,
     })
   } catch (error) {
     console.error('OCR failed', error)

@@ -34,6 +34,25 @@ describe('mergeOcr', () => {
     expect(result.name).toBe('Jane Doe')
   })
 
+  it('fills a second email and phone when the card has them', () => {
+    const result = mergeOcr(EMPTY_DRAFT, {
+      email: 'a@b.com',
+      email2: 'c@d.com',
+      phone: '555-0100',
+      phone2: '555-0200',
+    })
+    expect(result.email).toBe('a@b.com')
+    expect(result.email2).toBe('c@d.com')
+    expect(result.phone).toBe('555-0100')
+    expect(result.phone2).toBe('555-0200')
+  })
+
+  it('leaves the second slots empty when the card has one of each', () => {
+    const result = mergeOcr(EMPTY_DRAFT, { email: 'a@b.com', phone: '555-0100' })
+    expect(result.email2).toBe('')
+    expect(result.phone2).toBe('')
+  })
+
   it('returns the draft unchanged for an empty result', () => {
     const draft: ContactDraft = { ...EMPTY_DRAFT, name: 'Keep' }
     expect(mergeOcr(draft, {})).toEqual(draft)

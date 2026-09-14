@@ -15,9 +15,29 @@ interface Props {
   companies?: Company[]
 }
 
+/** A quiet "+ add another" line beneath a field. */
+function AddAnother({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="-mt-2 self-start text-[13px] text-[var(--accent-ink)] underline underline-offset-2"
+    >
+      + {label}
+    </button>
+  )
+}
+
 export function ContactForm({ draft, onChange, onSubmit, onCancel, busy, companies }: Props) {
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
+  // Cards often carry an office and a mobile, or two addresses. The second
+  // slot appears when OCR filled it or the rep asks for it — never as an
+  // empty field taking space on a phone screen.
+  const [showEmail2, setShowEmail2] = useState(false)
+  const [showPhone2, setShowPhone2] = useState(false)
+  const email2Visible = showEmail2 || draft.email2.trim().length > 0
+  const phone2Visible = showPhone2 || draft.phone2.trim().length > 0
 
   const options = useMemo(
     () =>
@@ -75,6 +95,18 @@ export function ContactForm({ draft, onChange, onSubmit, onCancel, busy, compani
         value={draft.email}
         onChange={(e) => set('email')(e.target.value)}
       />
+      {email2Visible ? (
+        <Field
+          label={t.fieldEmail2}
+          type="email"
+          inputMode="email"
+          value={draft.email2}
+          onChange={(e) => set('email2')(e.target.value)}
+        />
+      ) : (
+        <AddAnother label={t.addAnotherEmail} onClick={() => setShowEmail2(true)} />
+      )}
+
       <Field
         label={t.fieldPhone}
         type="tel"
@@ -82,6 +114,18 @@ export function ContactForm({ draft, onChange, onSubmit, onCancel, busy, compani
         value={draft.phone}
         onChange={(e) => set('phone')(e.target.value)}
       />
+      {phone2Visible ? (
+        <Field
+          label={t.fieldPhone2}
+          type="tel"
+          inputMode="tel"
+          value={draft.phone2}
+          onChange={(e) => set('phone2')(e.target.value)}
+        />
+      ) : (
+        <AddAnother label={t.addAnotherPhone} onClick={() => setShowPhone2(true)} />
+      )}
+
       <TextArea label={t.fieldNotes} rows={3} value={draft.notes} onChange={(e) => set('notes')(e.target.value)} />
       {error && <p className="text-[14px] text-[var(--flag)]">{error}</p>}
       <div className="flex gap-3">

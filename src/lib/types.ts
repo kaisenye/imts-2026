@@ -74,7 +74,9 @@ export interface Contact {
   title: string | null
   company_name: string | null
   email: string | null
+  email2: string | null
   phone: string | null
+  phone2: string | null
   notes: string | null
   card_image_url: string | null
   raw_ocr: OcrResult | null
@@ -86,5 +88,7 @@ export interface OcrResult {
   title?: string | null
   company?: string | null
   email?: string | null
+  email2?: string | null
   phone?: string | null
+  phone2?: string | null
 }

@@ -9,7 +9,9 @@ const base: Contact = {
   title: 'Tooling Manager',
   company_name: 'Yamazen',
   email: 'jane@example.com',
+  email2: null,
   phone: '+1 555 0100',
+  phone2: null,
   notes: null,
   card_image_url: null,
   raw_ocr: null,
@@ -19,7 +21,7 @@ const base: Contact = {
 describe('contactsToCsv', () => {
   it('emits a header row', () => {
     const csv = contactsToCsv([])
-    expect(csv.split('\n')[0]).toBe('Name,Title,Company,Email,Phone,Notes,Captured')
+    expect(csv.split('\n')[0]).toBe('Name,Title,Company,Email,Email 2,Phone,Phone 2,Notes,Captured')
   })
 
   it('writes one row per contact', () => {
@@ -36,8 +38,15 @@ describe('contactsToCsv', () => {
     expect(csv).toContain('"said ""call me"""')
   })
 
+  it('writes the second email and phone in their own columns', () => {
+    const csv = contactsToCsv([{ ...base, email2: 'jane@home.com', phone2: '+1 555 0200' }])
+    expect(csv.split('\n')[1]).toBe(
+      'Jane Doe,Tooling Manager,Yamazen,jane@example.com,jane@home.com,+1 555 0100,+1 555 0200,,2026-09-14',
+    )
+  })
+
   it('renders nulls as empty fields', () => {
     const csv = contactsToCsv([{ ...base, title: null, phone: null }])
-    expect(csv.split('\n')[1]).toBe('Jane Doe,,Yamazen,jane@example.com,,,2026-09-14')
+    expect(csv.split('\n')[1]).toBe('Jane Doe,,Yamazen,jane@example.com,,,,,2026-09-14')
   })
 })

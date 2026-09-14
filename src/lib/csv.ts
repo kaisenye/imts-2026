@@ -1,6 +1,6 @@
 import type { Contact } from './types'
 
-const HEADERS = ['Name', 'Title', 'Company', 'Email', 'Phone', 'Notes', 'Captured']
+const HEADERS = ['Name', 'Title', 'Company', 'Email', 'Email 2', 'Phone', 'Phone 2', 'Notes', 'Captured']
 
 function escape(value: string | null): string {
   if (!value) return ''
@@ -17,7 +17,9 @@ export function contactsToCsv(contacts: Contact[]): string {
       escape(c.title),
       escape(c.company_name),
       escape(c.email),
+      escape(c.email2),
       escape(c.phone),
+      escape(c.phone2),
       escape(c.notes),
       c.created_at.slice(0, 10),
     ].join(','),
