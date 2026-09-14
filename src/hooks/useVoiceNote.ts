@@ -4,8 +4,19 @@ import { useCallback, useRef, useState } from 'react'
  * Streaming dictation for the note box, via OpenAI realtime transcription.
  *
  * A rep is standing in a loud hall holding a coffee — typing a note is the
- * thing that does not happen, so the note gets lost. Speech arrives as partial
- * text while they talk and is committed when they stop.
+ * thing that does not happen, so the note gets lost.
+ *
+ * Text reaches the box two ways, and the first must never depend on the second:
+ *
+ *  1. `onLive` — every transcription delta, the instant it arrives. This is
+ *     what the rep sees while talking. It does not wait for a pause.
+ *  2. `onText` — the finalised transcript for a phrase, once the audio buffer
+ *     is committed. It replaces the live text for that phrase.
+ *
+ * gpt-live-transcribe does not support server-side turn detection, so the
+ * client commits the buffer itself on pauses. Pause detection is best-effort:
+ * if it never fires, the 12s cap or the stop button commits instead, and the
+ * rep has been watching live text the whole time either way.
  *
  * Audio is captured at 24 kHz mono PCM16, which is what the session expects.
  */
@@ -13,23 +24,25 @@ import { useCallback, useRef, useState } from 'react'
 export type VoiceState = 'idle' | 'connecting' | 'listening' | 'error'
 
 const SAMPLE_RATE = 24000
-
-// gpt-live-transcribe does not support server-side turn detection, so the
-// client decides where a phrase ends and commits the buffer itself. Without a
-// commit the API never emits a completed transcript and nothing reaches the
-// note box.
-//
-// A fixed silence threshold cannot work in both a quiet office and a hall with
-// 1,700 booths running: pick one and the rep either never gets a commit, or
-// gets one mid-sentence. Track the room's noise floor instead and treat speech
-// as anything clearly above it.
 const SILENCE_MS = 700
 const MIN_PHRASE_MS = 400
 const MAX_PHRASE_MS = 12000
-// Speech has to be this much louder than the room to count as speech.
+// Speech must be this much louder than the room's noise floor.
 const SPEECH_FACTOR = 2.2
-// Absolute floor, so a dead-silent room does not make every rustle "speech".
+// Absolute floor so a dead-silent room does not turn every rustle into speech.
 const MIN_FLOOR = 0.004
+// The noise floor is the quietest frame in the last ~3s. A running minimum
+// cannot lock up: the previous estimator only updated while "not speaking",
+// so a room louder than its own starting threshold was classed as speech
+// forever and no pause was ever detected.
+const FLOOR_WINDOW_FRAMES = 18
+// The first frames only calibrate the floor; nothing is classified until the
+// window holds a reference.
+const CALIBRATION_FRAMES = 2
+// Audio this loud is speech whatever the floor estimate says. Covers a rep
+// who starts talking before the window has heard any room noise — otherwise
+// the quietest *speech* frame becomes the floor and speech classes as quiet.
+const LOUD = 0.06
 
 function rms(input: Float32Array): number {
   let sum = 0
@@ -51,28 +64,47 @@ function floatToPcm16Base64(input: Float32Array): string {
 }
 
 interface Options {
-  /** Called with committed text each time a phrase finishes. */
+  /** Finalised text for one phrase. Replaces the live text for that phrase. */
   onText: (text: string) => void
+  /** All not-yet-finalised text, updated on every delta. */
+  onLive: (text: string) => void
 }
 
-export function useVoiceNote({ onText }: Options) {
+interface Pending {
+  id: string
+  text: string
+}
+
+export function useVoiceNote({ onText, onLive }: Options) {
   const [state, setState] = useState<VoiceState>('idle')
-  const [partial, setPartial] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const socket = useRef<WebSocket | null>(null)
   const stream = useRef<MediaStream | null>(null)
   const audioCtx = useRef<AudioContext | null>(null)
   const node = useRef<ScriptProcessorNode | null>(null)
-  // Audio buffered since the last commit, and how long we have heard silence.
+
+  // Phrases the API has started transcribing but not yet finalised, keyed by
+  // item so a commit for phrase N cannot swallow the first deltas of N+1.
+  const pending = useRef<Pending[]>([])
   const spokenMs = useRef(0)
   const quietMs = useRef(0)
   const phraseMs = useRef(0)
-  const noiseFloor = useRef(MIN_FLOOR)
+  const levels = useRef<number[]>([])
+
+  const emitLive = useCallback(() => {
+    onLive(pending.current.map((p) => p.text).join(' ').trim())
+  }, [onLive])
+
+  /** Forget in-flight phrases — the rep has taken over the box by hand. */
+  const discardPending = useCallback(() => {
+    pending.current = []
+    onLive('')
+  }, [onLive])
 
   const stop = useCallback(() => {
     const ws = socket.current
-    const pending = ws?.readyState === WebSocket.OPEN && spokenMs.current >= MIN_PHRASE_MS
+    const flush = ws?.readyState === WebSocket.OPEN && spokenMs.current >= MIN_PHRASE_MS
 
     // Release the mic straight away — the recording indicator must stop the
     // instant the button is tapped.
@@ -86,13 +118,12 @@ export function useVoiceNote({ onText }: Options) {
     spokenMs.current = 0
     quietMs.current = 0
     phraseMs.current = 0
-    noiseFloor.current = MIN_FLOOR
-    setPartial('')
+    levels.current = []
     setState('idle')
 
-    if (pending && ws) {
-      // Flush the half-finished phrase and give the socket a moment to deliver
-      // the transcript. Closing immediately drops the last thing the rep said.
+    if (flush && ws) {
+      // Finalise the half-finished phrase and let the socket deliver it.
+      // Closing immediately drops the last thing the rep said.
       ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
       socket.current = null
       setTimeout(() => ws.close(), 2500)
@@ -106,6 +137,7 @@ export function useVoiceNote({ onText }: Options) {
   const start = useCallback(async () => {
     setError(null)
     setState('connecting')
+    pending.current = []
 
     try {
       const tokenRes = await fetch('/api/realtime-token', { method: 'POST' })
@@ -121,8 +153,8 @@ export function useVoiceNote({ onText }: Options) {
       stream.current = media
 
       // GA realtime: the ephemeral secret rides the openai-insecure-api-key
-      // subprotocol. Sending openai-beta.realtime-v1 routes to the retired beta
-      // endpoint, which now refuses the connection.
+      // subprotocol. The old openai-beta.realtime-v1 subprotocol routes to the
+      // retired beta endpoint, which refuses the connection.
       const ws = new WebSocket('wss://api.openai.com/v1/realtime', [
         'realtime',
         `openai-insecure-api-key.${token}`,
@@ -139,7 +171,8 @@ export function useVoiceNote({ onText }: Options) {
         processor.onaudioprocess = (event) => {
           if (ws.readyState !== WebSocket.OPEN) return
           const samples = event.inputBuffer.getChannelData(0)
-          const frameMs = (samples.length / SAMPLE_RATE) * 1000
+          // Use the context's real rate: a browser may ignore the 24 kHz hint.
+          const frameMs = (samples.length / ctx.sampleRate) * 1000
 
           ws.send(
             JSON.stringify({
@@ -149,14 +182,13 @@ export function useVoiceNote({ onText }: Options) {
           )
 
           const level = rms(samples)
-          const speaking = level > Math.max(noiseFloor.current * SPEECH_FACTOR, MIN_FLOOR)
-
-          // Let the floor rise quickly when a room gets loud but fall slowly,
-          // so a pause between words does not drag the threshold down onto the
-          // speech itself.
-          noiseFloor.current = speaking
-            ? noiseFloor.current
-            : noiseFloor.current * 0.95 + level * 0.05
+          const recent = levels.current
+          recent.push(level)
+          if (recent.length > FLOOR_WINDOW_FRAMES) recent.shift()
+          const floor = Math.min(...recent)
+          const speaking =
+            level > LOUD ||
+            (recent.length > CALIBRATION_FRAMES && level > Math.max(floor * SPEECH_FACTOR, MIN_FLOOR))
 
           const commit = () => {
             ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
@@ -165,13 +197,11 @@ export function useVoiceNote({ onText }: Options) {
             phraseMs.current = 0
           }
 
-          // Commit on a pause so text lands while the rep is still talking,
-          // rather than all at once when they finally stop.
           if (speaking) {
             quietMs.current = 0
             spokenMs.current += frameMs
             phraseMs.current += frameMs
-            // A rep who never pauses would otherwise see nothing for minutes.
+            // A rep who never pauses must still get finalised text.
             if (phraseMs.current >= MAX_PHRASE_MS) commit()
           } else {
             quietMs.current += frameMs
@@ -188,17 +218,26 @@ export function useVoiceNote({ onText }: Options) {
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data as string) as {
           type: string
+          item_id?: string
           delta?: string
           transcript?: string
           error?: { message?: string }
         }
 
-        if (msg.type === 'conversation.item.input_audio_transcription.delta') {
-          setPartial((prev) => prev + (msg.delta ?? ''))
+        if (msg.type === 'conversation.item.input_audio_transcription.delta' && msg.item_id) {
+          const entry = pending.current.find((p) => p.id === msg.item_id)
+          if (entry) entry.text += msg.delta ?? ''
+          else pending.current.push({ id: msg.item_id, text: msg.delta ?? '' })
+          emitLive()
         } else if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+          const idx = pending.current.findIndex((p) => p.id === msg.item_id)
+          // Not pending means the rep discarded it by editing; drop it rather
+          // than append a duplicate of text they already have.
+          if (idx === -1) return
+          pending.current.splice(idx, 1)
           const text = (msg.transcript ?? '').trim()
           if (text) onText(text)
-          setPartial('')
+          emitLive()
         } else if (msg.type === 'error') {
           setError(msg.error?.message ?? 'Voice input failed')
           setState('error')
@@ -224,7 +263,14 @@ export function useVoiceNote({ onText }: Options) {
       setState('error')
       stop()
     }
-  }, [onText, stop])
+  }, [onText, emitLive, stop])
 
-  return { state, partial, error, start, stop, supported: typeof window !== 'undefined' && !!navigator.mediaDevices }
+  return {
+    state,
+    error,
+    start,
+    stop,
+    discardPending,
+    supported: typeof window !== 'undefined' && !!navigator.mediaDevices,
+  }
 }

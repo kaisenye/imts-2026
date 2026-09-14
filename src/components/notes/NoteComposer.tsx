@@ -3,31 +3,39 @@ import { useVoiceNote } from '../../hooks/useVoiceNote'
 import { useLocale } from '../../i18n/LocaleContext'
 import { Button } from '../ui/Button'
 
+const join = (a: string, b: string) => (a && b ? `${a.replace(/\s+$/, '')} ${b}` : a || b)
+
 export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void> }) {
   const { t } = useLocale()
+  // `body` is text that is settled: typed by hand or finalised by a commit.
+  // `live` is the phrase still being transcribed. The box shows both, so the
+  // rep watches their words land as they speak rather than waiting for a
+  // pause the room may never let us detect.
   const [body, setBody] = useState('')
+  const [live, setLive] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Dictated phrases append to whatever is already typed, so voice and
-  // keyboard can be mixed in one note.
-  const appendSpoken = useCallback((text: string) => {
-    setBody((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${text}` : text))
-  }, [])
+  const onText = useCallback((text: string) => setBody((prev) => join(prev, text)), [])
+  const onLive = useCallback((text: string) => setLive(text), [])
 
-  const voice = useVoiceNote({ onText: appendSpoken })
+  const voice = useVoiceNote({ onText, onLive })
   const listening = voice.state === 'listening' || voice.state === 'connecting'
+  const shown = join(body, live)
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    const trimmed = body.trim()
+    const trimmed = shown.trim()
     if (!trimmed) return
     if (listening) voice.stop()
+    // A finalised transcript arriving after save must not land in the empty box.
+    voice.discardPending()
     setSaving(true)
     setError(null)
     try {
       await onAdd(trimmed)
       setBody('')
+      setLive('')
     } catch (err) {
       setError(err instanceof Error ? err.message : t.noteSaveFailed)
     } finally {
@@ -39,8 +47,17 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
     <form onSubmit={submit} className="mt-1">
       <div className="relative">
         <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
+          value={shown}
+          onChange={(e) => {
+            // Typing while dictating: the rep has taken over, so whatever was
+            // in flight becomes ordinary text and its late transcript is
+            // dropped rather than appended as a duplicate.
+            if (live) {
+              voice.discardPending()
+              setLive('')
+            }
+            setBody(e.target.value)
+          }}
           rows={3}
           placeholder={t.notePlaceholder}
           aria-label={t.noteLabel}
@@ -86,28 +103,19 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
       </div>
 
       {listening && (
-        <p className="mt-1.5 flex items-start gap-2 text-[13px] text-[var(--muted)]">
-          <span className="relative mt-1.5 flex h-2 w-2 shrink-0">
+        <p className="mt-1.5 flex items-center gap-2 text-[13px] text-[var(--muted)]">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--flag)] opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--flag)]" />
           </span>
-          {/* Italic and faded so an in-flight phrase never looks like text
-              that has already landed in the box. */}
-          <span className={voice.partial ? 'italic text-[var(--faint)]' : ''}>
-            {voice.state === 'connecting' ? t.connecting : voice.partial || t.listening}
-          </span>
+          {voice.state === 'connecting' ? t.connecting : t.listening}
         </p>
       )}
 
       {voice.error && <p className="mt-1.5 text-[13px] text-[var(--flag)]">{voice.error}</p>}
       {error && <p className="mt-1.5 text-[14px] text-[var(--flag)]">{error}</p>}
 
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={saving || !body.trim()}
-        className="mt-2 w-full"
-      >
+      <Button type="submit" variant="primary" disabled={saving || !shown.trim()} className="mt-2 w-full">
         {saving ? t.saving : t.addNote}
       </Button>
     </form>
