@@ -20,7 +20,9 @@ export function Panel({ open, title, subtitle, onClose, children, footer }: Prop
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      // Escape closes the topmost layer only: a sheet or lightbox open above
+      // the panel takes it, and the panel stays put underneath.
+      if (e.key === 'Escape' && !document.querySelector('[data-overlay]')) onClose()
     }
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'

@@ -86,6 +86,7 @@ export default function Contacts() {
       <CardCapture
         open={captureOpen}
         companyId={null}
+        companies={companies}
         onSave={async (input) => {
           await add(input)
           setCaptureOpen(false)

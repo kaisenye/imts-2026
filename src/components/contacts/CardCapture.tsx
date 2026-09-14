@@ -2,7 +2,8 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { supabase, CARDS_BUCKET } from '../../lib/supabase'
 import { resizeImage } from '../../lib/image'
 import { EMPTY_DRAFT, mergeOcr, type ContactDraft } from '../../lib/ocrMerge'
-import type { Contact, OcrResult } from '../../lib/types'
+import { matchCompany } from '../../lib/matchCompany'
+import type { Company, Contact, OcrResult } from '../../lib/types'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
 import { ContactForm } from './ContactForm'
@@ -10,26 +11,31 @@ import { useLocale } from '../../i18n/LocaleContext'
 
 interface Props {
   open: boolean
+  /** Pre-linked target, when capturing from inside a company's panel. */
   companyId: string | null
+  /** All targets: offered in the picker, and used to resolve the card's company. */
+  companies: Company[]
   defaultCompanyName?: string
   onSave: (input: Partial<Contact>) => Promise<void>
   onClose: () => void
 }
 
-export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClose }: Props) {
+export function CardCapture({ open, companyId, companies, defaultCompanyName, onSave, onClose }: Props) {
   const { t } = useLocale()
   const fileInput = useRef<HTMLInputElement>(null)
-  const [draft, setDraft] = useState<ContactDraft>({
+  const fresh = (): ContactDraft => ({
     ...EMPTY_DRAFT,
     company_name: defaultCompanyName ?? '',
+    company_id: companyId,
   })
+  const [draft, setDraft] = useState<ContactDraft>(fresh)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [rawOcr, setRawOcr] = useState<OcrResult | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   const reset = () => {
-    setDraft({ ...EMPTY_DRAFT, company_name: defaultCompanyName ?? '' })
+    setDraft(fresh())
     setImageUrl(null)
     setRawOcr(null)
     setStatus(null)
@@ -65,7 +71,16 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
 
       const ocr = (await response.json()) as OcrResult
       setRawOcr(ocr)
-      setDraft((prev) => mergeOcr(prev, ocr))
+      setDraft((prev) => {
+        const merged = mergeOcr(prev, ocr)
+        // A card captured outside any panel has no link yet. Resolve the
+        // company OCR read to a target so the contact shows up under it —
+        // otherwise it only ever appears in the global list.
+        if (!merged.company_id) {
+          merged.company_id = matchCompany(ocr.company, companies)
+        }
+        return merged
+      })
       setStatus(null)
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Upload failed.')
@@ -78,7 +93,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
     setBusy(true)
     try {
       await onSave({
-        company_id: companyId,
+        company_id: draft.company_id,
         name: draft.name.trim() || null,
         title: draft.title.trim() || null,
         company_name: draft.company_name.trim() || null,
@@ -135,6 +150,7 @@ export function CardCapture({ open, companyId, defaultCompanyName, onSave, onClo
         onSubmit={save}
         onCancel={close}
         busy={busy}
+        companies={companies}
       />
     </Sheet>
   )

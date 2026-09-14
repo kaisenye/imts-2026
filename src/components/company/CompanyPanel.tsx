@@ -20,6 +20,8 @@ type Tab = 'brief' | 'notes' | 'contacts'
 
 interface Props {
   company: Company | null
+  /** All targets, for relinking a card that turns out to belong elsewhere. */
+  companies: Company[]
   visited: boolean
   onToggleVisited: () => void
   onClose: () => void
@@ -35,6 +37,7 @@ interface Props {
  */
 export function CompanyPanel({
   company,
+  companies,
   visited,
   onToggleVisited,
   onClose,
@@ -217,6 +220,7 @@ export function CompanyPanel({
           <CardCapture
             open={captureOpen}
             companyId={company.id}
+            companies={companies}
             defaultCompanyName={company.name}
             onSave={async (input) => {
               await addContact(input)

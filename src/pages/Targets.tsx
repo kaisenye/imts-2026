@@ -164,6 +164,7 @@ export default function Targets() {
 
       <CompanyPanel
         company={selected}
+        companies={companies}
         visited={!!selected && !!visited[selected.id]}
         onToggleVisited={() => selected && void toggle(selected.id)}
         onClose={() => setOpenId(null)}

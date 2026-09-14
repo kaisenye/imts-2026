@@ -12,7 +12,8 @@ export function Sheet({ open, title, onClose, children }: Props) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      // A lightbox above this sheet owns Escape.
+      if (e.key === 'Escape' && !document.querySelector('[data-overlay="lightbox"]')) onClose()
     }
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -26,7 +27,12 @@ export function Sheet({ open, title, onClose, children }: Props) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center lg:items-center" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center lg:items-center"
+      role="dialog"
+      aria-modal="true"
+      data-overlay="sheet"
+    >
       <button
         type="button"
         aria-label="Close"
