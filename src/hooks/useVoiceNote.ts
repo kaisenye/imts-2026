@@ -18,9 +18,18 @@ const SAMPLE_RATE = 24000
 // client decides where a phrase ends and commits the buffer itself. Without a
 // commit the API never emits a completed transcript and nothing reaches the
 // note box.
-const SILENCE_RMS = 0.012
-const SILENCE_MS = 800
+//
+// A fixed silence threshold cannot work in both a quiet office and a hall with
+// 1,700 booths running: pick one and the rep either never gets a commit, or
+// gets one mid-sentence. Track the room's noise floor instead and treat speech
+// as anything clearly above it.
+const SILENCE_MS = 700
 const MIN_PHRASE_MS = 400
+const MAX_PHRASE_MS = 12000
+// Speech has to be this much louder than the room to count as speech.
+const SPEECH_FACTOR = 2.2
+// Absolute floor, so a dead-silent room does not make every rustle "speech".
+const MIN_FLOOR = 0.004
 
 function rms(input: Float32Array): number {
   let sum = 0
@@ -58,6 +67,8 @@ export function useVoiceNote({ onText }: Options) {
   // Audio buffered since the last commit, and how long we have heard silence.
   const spokenMs = useRef(0)
   const quietMs = useRef(0)
+  const phraseMs = useRef(0)
+  const noiseFloor = useRef(MIN_FLOOR)
 
   const stop = useCallback(() => {
     const ws = socket.current
@@ -74,6 +85,8 @@ export function useVoiceNote({ onText }: Options) {
 
     spokenMs.current = 0
     quietMs.current = 0
+    phraseMs.current = 0
+    noiseFloor.current = MIN_FLOOR
     setPartial('')
     setState('idle')
 
@@ -135,18 +148,35 @@ export function useVoiceNote({ onText }: Options) {
             }),
           )
 
+          const level = rms(samples)
+          const speaking = level > Math.max(noiseFloor.current * SPEECH_FACTOR, MIN_FLOOR)
+
+          // Let the floor rise quickly when a room gets loud but fall slowly,
+          // so a pause between words does not drag the threshold down onto the
+          // speech itself.
+          noiseFloor.current = speaking
+            ? noiseFloor.current
+            : noiseFloor.current * 0.95 + level * 0.05
+
+          const commit = () => {
+            ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
+            spokenMs.current = 0
+            quietMs.current = 0
+            phraseMs.current = 0
+          }
+
           // Commit on a pause so text lands while the rep is still talking,
           // rather than all at once when they finally stop.
-          if (rms(samples) < SILENCE_RMS) {
-            quietMs.current += frameMs
-            if (quietMs.current >= SILENCE_MS && spokenMs.current >= MIN_PHRASE_MS) {
-              ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
-              spokenMs.current = 0
-              quietMs.current = 0
-            }
-          } else {
+          if (speaking) {
             quietMs.current = 0
             spokenMs.current += frameMs
+            phraseMs.current += frameMs
+            // A rep who never pauses would otherwise see nothing for minutes.
+            if (phraseMs.current >= MAX_PHRASE_MS) commit()
+          } else {
+            quietMs.current += frameMs
+            if (spokenMs.current > 0) phraseMs.current += frameMs
+            if (quietMs.current >= SILENCE_MS && spokenMs.current >= MIN_PHRASE_MS) commit()
           }
         }
 

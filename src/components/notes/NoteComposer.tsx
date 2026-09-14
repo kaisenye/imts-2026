@@ -86,12 +86,16 @@ export function NoteComposer({ onAdd }: { onAdd: (body: string) => Promise<void>
       </div>
 
       {listening && (
-        <p className="mt-1.5 flex items-center gap-2 text-[13px] text-[var(--muted)]">
-          <span className="relative flex h-2 w-2">
+        <p className="mt-1.5 flex items-start gap-2 text-[13px] text-[var(--muted)]">
+          <span className="relative mt-1.5 flex h-2 w-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--flag)] opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--flag)]" />
           </span>
-          {voice.state === 'connecting' ? t.connecting : voice.partial || t.listening}
+          {/* Italic and faded so an in-flight phrase never looks like text
+              that has already landed in the box. */}
+          <span className={voice.partial ? 'italic text-[var(--faint)]' : ''}>
+            {voice.state === 'connecting' ? t.connecting : voice.partial || t.listening}
+          </span>
         </p>
       )}
 
